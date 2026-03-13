@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package location;
+
+option go_package = "location-service/proto";
+
+service LocationService {
+  rpc CreateLocation(CreateLocationRequest) returns (LocationResponse);
+  rpc GetLocation(GetLocationRequest) returns (LocationResponse);
+  rpc ListLocations(Empty) returns (LocationList);
+  rpc SearchLocations(SearchRequest) returns (LocationList);
+  rpc DeleteLocation(DeleteLocationRequest) returns (Empty);
+}
+
+message Location {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string city = 4;
+  string category = 5;
+  double latitude = 6;
+  double longitude = 7;
+  double rating = 8;
+}
+
+message CreateLocationRequest {
+  string name = 1;
+  string description = 2;
+  string city = 3;
+  string category = 4;
+  double latitude = 5;
+  double longitude = 6;
+  double rating = 7;
+}
+
+message GetLocationRequest {
+  string id = 1;
+}
+
+message DeleteLocationRequest {
+  string id = 1;
+}
+
+message LocationResponse {
+  Location location = 1;
+}
+
+message LocationList {
+  repeated Location locations = 1;
+}
+
+message SearchRequest {
+  string city = 1;
+  string category = 2;
+  double min_rating = 3;
+}
+
+message Empty {}
