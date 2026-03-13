@@ -1,0 +1,21 @@
+services:
+
+  user-service:
+    build: .
+    ports:
+      - "50052:50052"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+
+  mongo:
+    image: mongo:7
+    container_name: mongo-user
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_user_data:/data/db
+
+volumes:
+  mongo_user_data:
