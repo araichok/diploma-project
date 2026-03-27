@@ -1,4 +1,4 @@
-FROM golang:1.22 AS builder
+FROM golang:1.25-alpine
 
 WORKDIR /app
 
@@ -7,13 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o app ./cmd/main.go
-
-FROM gcr.io/distroless/base-debian11
-
-WORKDIR /app
-
-COPY --from=builder /app/app .
+RUN go build -o app ./cmd
 
 EXPOSE 50052
 
