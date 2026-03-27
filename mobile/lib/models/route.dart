@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'mood.dart';
 
-class LatLng {
+class RoutePoint {
   final double latitude;
   final double longitude;
   
-  LatLng(this.latitude, this.longitude);
+  const RoutePoint(this.latitude, this.longitude);
+  
+  @override
+  String toString() => '($latitude, $longitude)';
 }
 
 class TouristRoute {
@@ -17,9 +19,9 @@ class TouristRoute {
   final int durationHours;
   final double rating;
   final String imageUrl;
-  final List<LatLng> waypoints;
+  final List<RoutePoint> waypoints;
   final String weatherPreference;
-  final double estimatedCost;
+  final int estimatedCost;
 
   TouristRoute({
     required this.id,
