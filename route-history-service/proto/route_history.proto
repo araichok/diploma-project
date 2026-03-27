@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package routehistory;
+
+option go_package = "route-history-service/proto;routehistory";
+
+service RouteHistoryService {
+  rpc CreateHistory(CreateHistoryRequest) returns (HistoryResponse);
+  rpc GetUserHistory(GetUserHistoryRequest) returns (HistoryListResponse);
+  rpc GetHistoryById(GetHistoryByIdRequest) returns (HistoryResponse);
+  rpc UpdateHistoryStatus(UpdateHistoryStatusRequest) returns (HistoryResponse);
+}
+
+message CreateHistoryRequest {
+  string user_id = 1;
+  string route_id = 2;
+  string route_name = 3;
+}
+
+message GetUserHistoryRequest {
+  string user_id = 1;
+}
+
+message GetHistoryByIdRequest {
+  string history_id = 1;
+}
+
+message UpdateHistoryStatusRequest {
+  string route_id = 1;
+  string status = 2;
+}
+
+message History {
+  string history_id = 1;
+  string user_id = 2;
+  string route_id = 3;
+  string route_name = 4;
+  string status = 5;
+  string created_at = 6;
+}
+
+message HistoryResponse {
+  History history = 1;
+}
+
+message HistoryListResponse {
+  repeated History histories = 1;
+}
