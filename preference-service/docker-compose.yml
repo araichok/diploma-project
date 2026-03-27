@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  preference-service:
+    build: .
+    container_name: preference-service
+    ports:
+      - "50052:50052"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+    restart: always
+
+volumes:
+  mongo_data:

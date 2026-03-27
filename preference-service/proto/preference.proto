@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package preference;
+
+option go_package = "proto/";
+
+service PreferenceService {
+
+  rpc GetPreferences (PreferenceRequest) returns (PreferenceResponse);
+
+  rpc SavePreferences (PreferenceRequest) returns (Empty);
+
+  rpc GetUserPreferences (UserRequest) returns (PreferenceRequest);
+}
+
+message PreferenceRequest {
+  string user_id = 1;
+  string mood = 2;
+  string time_of_day = 3;
+  string budget = 4;
+}
+
+message PreferenceResponse {
+  repeated string categories = 1;
+}
+
+message UserRequest {
+  string user_id = 1;
+}
+
+message Empty {}

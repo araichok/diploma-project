@@ -7,7 +7,9 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o app ./cmd/main.go
+# 🔥 ВАЖНО — статическая сборка
+RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/main.go
+
 
 FROM gcr.io/distroless/base-debian11
 
