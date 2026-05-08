@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"user-service/internal/auth"
 	"user-service/internal/model"
@@ -59,14 +60,39 @@ func (s *UserService) Login(req model.LoginRequest) (*model.LoginResponse, error
 		return nil, errors.New("invalid email or password")
 	}
 
-	token, err := auth.GenerateToken(user.ID, user.Email, user.Role, s.jwtSecret)
+	accessToken, err := auth.GenerateToken(
+		user.ID,
+		user.Email,
+		user.Role,
+		s.jwtSecret,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := auth.GenerateRefreshToken(
+		user.ID,
+		user.Email,
+		user.Role,
+		s.jwtSecret,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.userRepo.SaveRefreshToken(
+		user.ID,
+		refreshToken,
+		time.Now().Add(7*24*time.Hour),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.LoginResponse{
-		Token: token,
-		User:  *user,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         *user,
 	}, nil
 }
 
@@ -96,4 +122,44 @@ func (s *UserService) DeleteUser(id string) error {
 	}
 
 	return s.userRepo.DeleteUser(id)
+}
+
+func (s *UserService) RefreshToken(refreshToken string) (*model.LoginResponse, error) {
+	if refreshToken == "" {
+		return nil, errors.New("refresh token is required")
+	}
+
+	userID, err := s.userRepo.GetRefreshToken(refreshToken)
+	if err != nil {
+		return nil, errors.New("invalid refresh token")
+	}
+
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := auth.GenerateToken(
+		user.ID,
+		user.Email,
+		user.Role,
+		s.jwtSecret,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         *user,
+	}, nil
+}
+
+func (s *UserService) Logout(refreshToken string) error {
+	if refreshToken == "" {
+		return errors.New("refresh token is required")
+	}
+
+	return s.userRepo.DeleteRefreshToken(refreshToken)
 }
