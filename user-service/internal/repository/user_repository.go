@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"user-service/internal/model"
 
@@ -137,5 +138,42 @@ func (r *UserRepository) DeleteUser(id string) error {
 	`
 
 	_, err := r.db.Exec(context.Background(), query, id)
+	return err
+}
+
+func (r *UserRepository) SaveRefreshToken(userID, token string, expiresAt time.Time) error {
+	query := `
+		INSERT INTO refresh_tokens (user_id, token, expires_at)
+		VALUES ($1, $2, $3)
+	`
+
+	_, err := r.db.Exec(context.Background(), query, userID, token, expiresAt)
+	return err
+}
+
+func (r *UserRepository) GetRefreshToken(token string) (string, error) {
+	query := `
+		SELECT user_id
+		FROM refresh_tokens
+		WHERE token = $1 AND expires_at > CURRENT_TIMESTAMP
+	`
+
+	var userID string
+
+	err := r.db.QueryRow(context.Background(), query, token).Scan(&userID)
+	if err != nil {
+		return "", err
+	}
+
+	return userID, nil
+}
+
+func (r *UserRepository) DeleteRefreshToken(token string) error {
+	query := `
+		DELETE FROM refresh_tokens
+		WHERE token = $1
+	`
+
+	_, err := r.db.Exec(context.Background(), query, token)
 	return err
 }
