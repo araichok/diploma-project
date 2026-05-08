@@ -5,22 +5,23 @@ import (
 	"log"
 	"net"
 
+	"user-service/internal/cache"
 	"user-service/internal/config"
 	"user-service/internal/database"
 	"user-service/internal/handler"
+	"user-service/internal/middleware"
 	"user-service/internal/repository"
 	"user-service/internal/service"
 	"user-service/proto/userpb"
 
 	"google.golang.org/grpc"
-
-	"user-service/internal/middleware"
 )
 
 func main() {
 
 	cfg := config.LoadConfig()
 
+	// PostgreSQL
 	conn, err := database.ConnectDB(cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -28,17 +29,33 @@ func main() {
 
 	defer conn.Close(context.Background())
 
+	// Redis
+	redisClient := cache.NewRedisClient(cfg)
+	defer redisClient.Close()
+
+	// Repository
 	userRepo := repository.NewUserRepository(conn)
 
-	userService := service.NewUserService(userRepo, cfg.JWTSecret)
+	// Cache
+	userCache := cache.NewUserCache(redisClient)
 
+	// Service
+	userService := service.NewUserService(
+		userRepo,
+		userCache,
+		cfg.JWTSecret,
+	)
+
+	// Handler
 	userHandler := handler.NewUserGrpcHandler(userService)
 
+	// Listener
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// gRPC server
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(
 			middleware.AuthInterceptor(cfg),
