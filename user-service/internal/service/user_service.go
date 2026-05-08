@@ -5,18 +5,25 @@ import (
 	"time"
 
 	"user-service/internal/auth"
+	"user-service/internal/cache"
 	"user-service/internal/model"
 	"user-service/internal/repository"
 )
 
 type UserService struct {
 	userRepo  *repository.UserRepository
+	userCache *cache.UserCache
 	jwtSecret string
 }
 
-func NewUserService(userRepo *repository.UserRepository, jwtSecret string) *UserService {
+func NewUserService(
+	userRepo *repository.UserRepository,
+	userCache *cache.UserCache,
+	jwtSecret string,
+) *UserService {
 	return &UserService{
 		userRepo:  userRepo,
+		userCache: userCache,
 		jwtSecret: jwtSecret,
 	}
 }
@@ -101,7 +108,19 @@ func (s *UserService) GetProfile(id string) (*model.User, error) {
 		return nil, errors.New("user id is required")
 	}
 
-	return s.userRepo.GetUserByID(id)
+	cachedUser, err := s.userCache.GetUser(id)
+	if err == nil {
+		return cachedUser, nil
+	}
+
+	user, err := s.userRepo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = s.userCache.SetUser(user)
+
+	return user, nil
 }
 
 func (s *UserService) UpdateUser(id string, req model.UpdateUserRequest) (*model.User, error) {
@@ -113,7 +132,14 @@ func (s *UserService) UpdateUser(id string, req model.UpdateUserRequest) (*model
 		return nil, errors.New("all fields are required")
 	}
 
-	return s.userRepo.UpdateUser(id, req)
+	user, err := s.userRepo.UpdateUser(id, req)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = s.userCache.SetUser(user)
+
+	return user, nil
 }
 
 func (s *UserService) DeleteUser(id string) error {
@@ -121,9 +147,15 @@ func (s *UserService) DeleteUser(id string) error {
 		return errors.New("user id is required")
 	}
 
-	return s.userRepo.DeleteUser(id)
-}
+	err := s.userRepo.DeleteUser(id)
+	if err != nil {
+		return err
+	}
 
+	_ = s.userCache.DeleteUser(id)
+
+	return nil
+}
 func (s *UserService) RefreshToken(refreshToken string) (*model.LoginResponse, error) {
 	if refreshToken == "" {
 		return nil, errors.New("refresh token is required")
