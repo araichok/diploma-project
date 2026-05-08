@@ -43,6 +43,7 @@ func (h *UserGrpcHandler) Register(
 		Role:      user.Role,
 	}, nil
 }
+
 func (h *UserGrpcHandler) Login(
 	ctx context.Context,
 	req *userpb.LoginRequest,
@@ -60,7 +61,8 @@ func (h *UserGrpcHandler) Login(
 	user := loginResponse.User
 
 	return &userpb.LoginResponse{
-		Token: loginResponse.Token,
+		AccessToken:  loginResponse.AccessToken,
+		RefreshToken: loginResponse.RefreshToken,
 		User: &userpb.UserResponse{
 			Id:        user.ID,
 			FirstName: user.FirstName,
@@ -70,6 +72,7 @@ func (h *UserGrpcHandler) Login(
 		},
 	}, nil
 }
+
 func (h *UserGrpcHandler) GetProfile(
 	ctx context.Context,
 	req *userpb.GetProfileRequest,
@@ -128,5 +131,45 @@ func (h *UserGrpcHandler) DeleteUser(
 
 	return &userpb.DeleteUserResponse{
 		Message: "User deleted successfully",
+	}, nil
+}
+
+func (h *UserGrpcHandler) RefreshToken(
+	ctx context.Context,
+	req *userpb.RefreshTokenRequest,
+) (*userpb.LoginResponse, error) {
+
+	loginResponse, err := h.userService.RefreshToken(req.RefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	user := loginResponse.User
+
+	return &userpb.LoginResponse{
+		AccessToken:  loginResponse.AccessToken,
+		RefreshToken: loginResponse.RefreshToken,
+		User: &userpb.UserResponse{
+			Id:        user.ID,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			Role:      user.Role,
+		},
+	}, nil
+}
+
+func (h *UserGrpcHandler) Logout(
+	ctx context.Context,
+	req *userpb.LogoutRequest,
+) (*userpb.LogoutResponse, error) {
+
+	err := h.userService.Logout(req.RefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.LogoutResponse{
+		Message: "Logged out successfully",
 	}, nil
 }
