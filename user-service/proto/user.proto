@@ -10,6 +10,8 @@ service UserService {
   rpc GetProfile(GetProfileRequest) returns (UserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
   rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
 }
 
 message RegisterRequest {
@@ -22,6 +24,12 @@ message RegisterRequest {
 message LoginRequest {
   string email = 1;
   string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  UserResponse user = 3;
 }
 
 message GetProfileRequest {
@@ -47,11 +55,18 @@ message UserResponse {
   string role = 5;
 }
 
-message LoginResponse {
-  string token = 1;
-  UserResponse user = 2;
+message DeleteUserResponse {
+  string message = 1;
 }
 
-message DeleteUserResponse {
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
   string message = 1;
 }
