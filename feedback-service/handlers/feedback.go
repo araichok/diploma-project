@@ -1,4 +1,4 @@
-package handlers
+package handlers // Package handlers provides HTTP handler functions for feedback operations
 
 import (
 	"encoding/json"
