@@ -1,0 +1,28 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: user_service_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: tourism_ai
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  user-service:
+    build: .
+    container_name: user_service
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "50051:50051"
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
