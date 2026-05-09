@@ -609,6 +609,110 @@ func (x *LogoutResponse) GetMessage() string {
 	return ""
 }
 
+type ChangePasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OldPassword   string                 `protobuf:"bytes,2,opt,name=old_password,json=oldPassword,proto3" json:"old_password,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,3,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordRequest) Reset() {
+	*x = ChangePasswordRequest{}
+	mi := &file_proto_user_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordRequest) ProtoMessage() {}
+
+func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_user_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
+func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
+	return file_proto_user_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ChangePasswordRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetOldPassword() string {
+	if x != nil {
+		return x.OldPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type ChangePasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordResponse) Reset() {
+	*x = ChangePasswordResponse{}
+	mi := &file_proto_user_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordResponse) ProtoMessage() {}
+
+func (x *ChangePasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_user_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordResponse.ProtoReflect.Descriptor instead.
+func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
+	return file_proto_user_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ChangePasswordResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_proto_user_proto protoreflect.FileDescriptor
 
 const file_proto_user_proto_rawDesc = "" +
@@ -651,7 +755,13 @@ const file_proto_user_proto_rawDesc = "" +
 	"\rLogoutRequest\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"*\n" +
 	"\x0eLogoutResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\xa2\x03\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"v\n" +
+	"\x15ChangePasswordRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
+	"\fold_password\x18\x02 \x01(\tR\voldPassword\x12!\n" +
+	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\"2\n" +
+	"\x16ChangePasswordResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xef\x03\n" +
 	"\vUserService\x125\n" +
 	"\bRegister\x12\x15.user.RegisterRequest\x1a\x12.user.UserResponse\x120\n" +
 	"\x05Login\x12\x12.user.LoginRequest\x1a\x13.user.LoginResponse\x129\n" +
@@ -662,7 +772,8 @@ const file_proto_user_proto_rawDesc = "" +
 	"\n" +
 	"DeleteUser\x12\x17.user.DeleteUserRequest\x1a\x18.user.DeleteUserResponse\x12>\n" +
 	"\fRefreshToken\x12\x19.user.RefreshTokenRequest\x1a\x13.user.LoginResponse\x123\n" +
-	"\x06Logout\x12\x13.user.LogoutRequest\x1a\x14.user.LogoutResponseB\x10Z\x0e./proto/userpbb\x06proto3"
+	"\x06Logout\x12\x13.user.LogoutRequest\x1a\x14.user.LogoutResponse\x12K\n" +
+	"\x0eChangePassword\x12\x1b.user.ChangePasswordRequest\x1a\x1c.user.ChangePasswordResponseB\x10Z\x0e./proto/userpbb\x06proto3"
 
 var (
 	file_proto_user_proto_rawDescOnce sync.Once
@@ -676,19 +787,21 @@ func file_proto_user_proto_rawDescGZIP() []byte {
 	return file_proto_user_proto_rawDescData
 }
 
-var file_proto_user_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_proto_user_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_user_proto_goTypes = []any{
-	(*RegisterRequest)(nil),     // 0: user.RegisterRequest
-	(*LoginRequest)(nil),        // 1: user.LoginRequest
-	(*LoginResponse)(nil),       // 2: user.LoginResponse
-	(*GetProfileRequest)(nil),   // 3: user.GetProfileRequest
-	(*UpdateUserRequest)(nil),   // 4: user.UpdateUserRequest
-	(*DeleteUserRequest)(nil),   // 5: user.DeleteUserRequest
-	(*UserResponse)(nil),        // 6: user.UserResponse
-	(*DeleteUserResponse)(nil),  // 7: user.DeleteUserResponse
-	(*RefreshTokenRequest)(nil), // 8: user.RefreshTokenRequest
-	(*LogoutRequest)(nil),       // 9: user.LogoutRequest
-	(*LogoutResponse)(nil),      // 10: user.LogoutResponse
+	(*RegisterRequest)(nil),        // 0: user.RegisterRequest
+	(*LoginRequest)(nil),           // 1: user.LoginRequest
+	(*LoginResponse)(nil),          // 2: user.LoginResponse
+	(*GetProfileRequest)(nil),      // 3: user.GetProfileRequest
+	(*UpdateUserRequest)(nil),      // 4: user.UpdateUserRequest
+	(*DeleteUserRequest)(nil),      // 5: user.DeleteUserRequest
+	(*UserResponse)(nil),           // 6: user.UserResponse
+	(*DeleteUserResponse)(nil),     // 7: user.DeleteUserResponse
+	(*RefreshTokenRequest)(nil),    // 8: user.RefreshTokenRequest
+	(*LogoutRequest)(nil),          // 9: user.LogoutRequest
+	(*LogoutResponse)(nil),         // 10: user.LogoutResponse
+	(*ChangePasswordRequest)(nil),  // 11: user.ChangePasswordRequest
+	(*ChangePasswordResponse)(nil), // 12: user.ChangePasswordResponse
 }
 var file_proto_user_proto_depIdxs = []int32{
 	6,  // 0: user.LoginResponse.user:type_name -> user.UserResponse
@@ -699,15 +812,17 @@ var file_proto_user_proto_depIdxs = []int32{
 	5,  // 5: user.UserService.DeleteUser:input_type -> user.DeleteUserRequest
 	8,  // 6: user.UserService.RefreshToken:input_type -> user.RefreshTokenRequest
 	9,  // 7: user.UserService.Logout:input_type -> user.LogoutRequest
-	6,  // 8: user.UserService.Register:output_type -> user.UserResponse
-	2,  // 9: user.UserService.Login:output_type -> user.LoginResponse
-	6,  // 10: user.UserService.GetProfile:output_type -> user.UserResponse
-	6,  // 11: user.UserService.UpdateUser:output_type -> user.UserResponse
-	7,  // 12: user.UserService.DeleteUser:output_type -> user.DeleteUserResponse
-	2,  // 13: user.UserService.RefreshToken:output_type -> user.LoginResponse
-	10, // 14: user.UserService.Logout:output_type -> user.LogoutResponse
-	8,  // [8:15] is the sub-list for method output_type
-	1,  // [1:8] is the sub-list for method input_type
+	11, // 8: user.UserService.ChangePassword:input_type -> user.ChangePasswordRequest
+	6,  // 9: user.UserService.Register:output_type -> user.UserResponse
+	2,  // 10: user.UserService.Login:output_type -> user.LoginResponse
+	6,  // 11: user.UserService.GetProfile:output_type -> user.UserResponse
+	6,  // 12: user.UserService.UpdateUser:output_type -> user.UserResponse
+	7,  // 13: user.UserService.DeleteUser:output_type -> user.DeleteUserResponse
+	2,  // 14: user.UserService.RefreshToken:output_type -> user.LoginResponse
+	10, // 15: user.UserService.Logout:output_type -> user.LogoutResponse
+	12, // 16: user.UserService.ChangePassword:output_type -> user.ChangePasswordResponse
+	9,  // [9:17] is the sub-list for method output_type
+	1,  // [1:9] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -724,7 +839,7 @@ func file_proto_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_user_proto_rawDesc), len(file_proto_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -12,6 +12,7 @@ The service provides:
 - User profile management
 - Redis caching
 - PostgreSQL persistence
+- Validation Rules
 
 ---
 
@@ -71,17 +72,28 @@ user-service/
 - Get Profile
 - Update User
 - Delete User
+- Change Password
 
 ## Security
 
 - Password hashing with bcrypt
-- JWT validation
+- JWT authentication
+- JWT access tokens
+- Refresh token support
 - gRPC Auth Interceptor
 - Protected routes
+- Request validation
 
 ## Caching
 
 Redis is used for caching user profile data.
+
+# Validation Rules
+
+- Password must contain at least 8 characters
+- Email must be valid
+- First name and last name are required
+- User input is validated before processing requests
 
 ---
 
@@ -200,7 +212,6 @@ Return response
 
 - Role-based access control
 - Email verification
-- Password reset
 - Multi-device sessions
 - Kubernetes deployment
 - API Gateway
