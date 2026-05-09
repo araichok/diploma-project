@@ -101,9 +101,7 @@ func (r *FeedbackRepository) GetByRouteID(routeID string) ([]models.Feedback, er
 	return feedbacks, nil
 }
 
-// Delete removes a feedback by ID
 func (r *FeedbackRepository) Delete(id string) error {
 	_, err := r.db.Exec(`DELETE FROM feedbacks WHERE id = $1`, id)
 	return err
 }
-func ()
