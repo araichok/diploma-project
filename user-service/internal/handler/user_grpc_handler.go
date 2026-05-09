@@ -173,3 +173,23 @@ func (h *UserGrpcHandler) Logout(
 		Message: "Logged out successfully",
 	}, nil
 }
+
+func (h *UserGrpcHandler) ChangePassword(
+	ctx context.Context,
+	req *userpb.ChangePasswordRequest,
+) (*userpb.ChangePasswordResponse, error) {
+
+	err := h.userService.ChangePassword(model.ChangePasswordRequest{
+		UserID:      req.UserId,
+		OldPassword: req.OldPassword,
+		NewPassword: req.NewPassword,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.ChangePasswordResponse{
+		Message: "Password changed successfully",
+	}, nil
+}
