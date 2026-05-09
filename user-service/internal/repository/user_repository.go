@@ -177,3 +177,21 @@ func (r *UserRepository) DeleteRefreshToken(token string) error {
 	_, err := r.db.Exec(context.Background(), query, token)
 	return err
 }
+
+func (r *UserRepository) UpdatePassword(userID, passwordHash string) error {
+	query := `
+		UPDATE users
+		SET password_hash = $1,
+		    updated_at = CURRENT_TIMESTAMP
+		WHERE id = $2
+	`
+
+	_, err := r.db.Exec(
+		context.Background(),
+		query,
+		passwordHash,
+		userID,
+	)
+
+	return err
+}
