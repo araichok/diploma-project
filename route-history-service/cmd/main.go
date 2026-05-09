@@ -5,22 +5,27 @@ import (
 	"log"
 	"net"
 
-	pb "route-history-service/proto"
+	"route-history-service/internal/repository"
 	"route-history-service/internal/service"
+	pb "route-history-service/proto"
+	"route-history-service/storage"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
+	storage.InitDB()
+
+	repo := repository.NewRouteHistoryRepository(storage.DB)
+	historyService := service.NewRouteHistoryService(repo)
+
 	lis, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	historyServer := service.NewRouteHistoryServer()
-
-	pb.RegisterRouteHistoryServiceServer(grpcServer, historyServer)
+	pb.RegisterRouteHistoryServiceServer(grpcServer, historyService)
 
 	fmt.Println("gRPC Route History Service running on port 50052")
 
