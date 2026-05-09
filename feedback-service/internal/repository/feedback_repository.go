@@ -106,4 +106,3 @@ func (r *FeedbackRepository) Delete(id string) error {
 	_, err := r.db.Exec(`DELETE FROM feedbacks WHERE id = $1`, id)
 	return err
 }
-ret
