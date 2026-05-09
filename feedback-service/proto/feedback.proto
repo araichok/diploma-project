@@ -13,8 +13,9 @@ service FeedbackService {
 message CreateFeedbackRequest {
   string user_id = 1;
   string route_id = 2;
-  int32 rating = 3;
-  string review = 4;
+  string location_id = 3;
+  int32 rating = 4;
+  string comment = 5;
 }
 
 message GetFeedbackByRouteRequest {
@@ -29,9 +30,10 @@ message Feedback {
   string feedback_id = 1;
   string user_id = 2;
   string route_id = 3;
-  int32 rating = 4;
-  string review = 5;
-  string created_at = 6;
+  string location_id = 4;
+  int32 rating = 5;
+  string comment = 6;
+  string created_at = 7;
 }
 
 message FeedbackResponse {
