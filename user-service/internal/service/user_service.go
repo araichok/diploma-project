@@ -8,6 +8,7 @@ import (
 	"user-service/internal/cache"
 	"user-service/internal/model"
 	"user-service/internal/repository"
+	"user-service/internal/validation"
 )
 
 type UserService struct {
@@ -29,8 +30,8 @@ func NewUserService(
 }
 
 func (s *UserService) Register(req model.RegisterRequest) (*model.User, error) {
-	if req.FirstName == "" || req.LastName == "" || req.Email == "" || req.Password == "" {
-		return nil, errors.New("all fields are required")
+	if err := validation.Validate.Struct(req); err != nil {
+		return nil, errors.New("invalid registration data")
 	}
 
 	hashedPassword, err := auth.HashPassword(req.Password)
@@ -54,8 +55,8 @@ func (s *UserService) Register(req model.RegisterRequest) (*model.User, error) {
 }
 
 func (s *UserService) Login(req model.LoginRequest) (*model.LoginResponse, error) {
-	if req.Email == "" || req.Password == "" {
-		return nil, errors.New("email and password are required")
+	if err := validation.Validate.Struct(req); err != nil {
+		return nil, errors.New("invalid login data")
 	}
 
 	user, err := s.userRepo.GetUserByEmail(req.Email)
@@ -128,8 +129,8 @@ func (s *UserService) UpdateUser(id string, req model.UpdateUserRequest) (*model
 		return nil, errors.New("user id is required")
 	}
 
-	if req.FirstName == "" || req.LastName == "" || req.Email == "" {
-		return nil, errors.New("all fields are required")
+	if err := validation.Validate.Struct(req); err != nil {
+		return nil, errors.New("invalid user data")
 	}
 
 	user, err := s.userRepo.UpdateUser(id, req)
@@ -194,4 +195,26 @@ func (s *UserService) Logout(refreshToken string) error {
 	}
 
 	return s.userRepo.DeleteRefreshToken(refreshToken)
+}
+
+func (s *UserService) ChangePassword(req model.ChangePasswordRequest) error {
+	if err := validation.Validate.Struct(req); err != nil {
+		return errors.New("invalid password data")
+	}
+
+	user, err := s.userRepo.GetUserByID(req.UserID)
+	if err != nil {
+		return err
+	}
+
+	if !auth.CheckPassword(req.OldPassword, user.PasswordHash) {
+		return errors.New("old password is incorrect")
+	}
+
+	newHashedPassword, err := auth.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdatePassword(req.UserID, newHashedPassword)
 }
