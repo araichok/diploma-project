@@ -25,8 +25,9 @@ type CreateFeedbackRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	RouteId       string                 `protobuf:"bytes,2,opt,name=route_id,json=routeId,proto3" json:"route_id,omitempty"`
-	Rating        int32                  `protobuf:"varint,3,opt,name=rating,proto3" json:"rating,omitempty"`
-	Review        string                 `protobuf:"bytes,4,opt,name=review,proto3" json:"review,omitempty"`
+	LocationId    string                 `protobuf:"bytes,3,opt,name=location_id,json=locationId,proto3" json:"location_id,omitempty"`
+	Rating        int32                  `protobuf:"varint,4,opt,name=rating,proto3" json:"rating,omitempty"`
+	Comment       string                 `protobuf:"bytes,5,opt,name=comment,proto3" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,6 +76,13 @@ func (x *CreateFeedbackRequest) GetRouteId() string {
 	return ""
 }
 
+func (x *CreateFeedbackRequest) GetLocationId() string {
+	if x != nil {
+		return x.LocationId
+	}
+	return ""
+}
+
 func (x *CreateFeedbackRequest) GetRating() int32 {
 	if x != nil {
 		return x.Rating
@@ -82,9 +90,9 @@ func (x *CreateFeedbackRequest) GetRating() int32 {
 	return 0
 }
 
-func (x *CreateFeedbackRequest) GetReview() string {
+func (x *CreateFeedbackRequest) GetComment() string {
 	if x != nil {
-		return x.Review
+		return x.Comment
 	}
 	return ""
 }
@@ -182,9 +190,10 @@ type Feedback struct {
 	FeedbackId    string                 `protobuf:"bytes,1,opt,name=feedback_id,json=feedbackId,proto3" json:"feedback_id,omitempty"`
 	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	RouteId       string                 `protobuf:"bytes,3,opt,name=route_id,json=routeId,proto3" json:"route_id,omitempty"`
-	Rating        int32                  `protobuf:"varint,4,opt,name=rating,proto3" json:"rating,omitempty"`
-	Review        string                 `protobuf:"bytes,5,opt,name=review,proto3" json:"review,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LocationId    string                 `protobuf:"bytes,4,opt,name=location_id,json=locationId,proto3" json:"location_id,omitempty"`
+	Rating        int32                  `protobuf:"varint,5,opt,name=rating,proto3" json:"rating,omitempty"`
+	Comment       string                 `protobuf:"bytes,6,opt,name=comment,proto3" json:"comment,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -240,6 +249,13 @@ func (x *Feedback) GetRouteId() string {
 	return ""
 }
 
+func (x *Feedback) GetLocationId() string {
+	if x != nil {
+		return x.LocationId
+	}
+	return ""
+}
+
 func (x *Feedback) GetRating() int32 {
 	if x != nil {
 		return x.Rating
@@ -247,9 +263,9 @@ func (x *Feedback) GetRating() int32 {
 	return 0
 }
 
-func (x *Feedback) GetReview() string {
+func (x *Feedback) GetComment() string {
 	if x != nil {
-		return x.Review
+		return x.Comment
 	}
 	return ""
 }
@@ -353,25 +369,29 @@ var File_proto_feedback_proto protoreflect.FileDescriptor
 
 const file_proto_feedback_proto_rawDesc = "" +
 	"\n" +
-	"\x14proto/feedback.proto\x12\bfeedback\"{\n" +
+	"\x14proto/feedback.proto\x12\bfeedback\"\x9e\x01\n" +
 	"\x15CreateFeedbackRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
-	"\broute_id\x18\x02 \x01(\tR\arouteId\x12\x16\n" +
-	"\x06rating\x18\x03 \x01(\x05R\x06rating\x12\x16\n" +
-	"\x06review\x18\x04 \x01(\tR\x06review\"6\n" +
+	"\broute_id\x18\x02 \x01(\tR\arouteId\x12\x1f\n" +
+	"\vlocation_id\x18\x03 \x01(\tR\n" +
+	"locationId\x12\x16\n" +
+	"\x06rating\x18\x04 \x01(\x05R\x06rating\x12\x18\n" +
+	"\acomment\x18\x05 \x01(\tR\acomment\"6\n" +
 	"\x19GetFeedbackByRouteRequest\x12\x19\n" +
 	"\broute_id\x18\x01 \x01(\tR\arouteId\"3\n" +
 	"\x18GetFeedbackByUserRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"\xae\x01\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\xd1\x01\n" +
 	"\bFeedback\x12\x1f\n" +
 	"\vfeedback_id\x18\x01 \x01(\tR\n" +
 	"feedbackId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
-	"\broute_id\x18\x03 \x01(\tR\arouteId\x12\x16\n" +
-	"\x06rating\x18\x04 \x01(\x05R\x06rating\x12\x16\n" +
-	"\x06review\x18\x05 \x01(\tR\x06review\x12\x1d\n" +
+	"\broute_id\x18\x03 \x01(\tR\arouteId\x12\x1f\n" +
+	"\vlocation_id\x18\x04 \x01(\tR\n" +
+	"locationId\x12\x16\n" +
+	"\x06rating\x18\x05 \x01(\x05R\x06rating\x12\x18\n" +
+	"\acomment\x18\x06 \x01(\tR\acomment\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\"B\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\"B\n" +
 	"\x10FeedbackResponse\x12.\n" +
 	"\bfeedback\x18\x01 \x01(\v2\x12.feedback.FeedbackR\bfeedback\"H\n" +
 	"\x14FeedbackListResponse\x120\n" +
