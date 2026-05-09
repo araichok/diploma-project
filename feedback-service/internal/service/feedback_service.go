@@ -2,70 +2,93 @@ package service
 
 import (
 	"context"
-	"time"
 
-	"github.com/google/uuid"
-
-	"feedback-service/internal/client"
+	"feedback-service/internal/repository"
+	"feedback-service/models"
 	pb "feedback-service/proto"
 )
 
-type FeedbackServer struct {
+// FeedbackService handles business logic for feedback
+type FeedbackService struct {
 	pb.UnimplementedFeedbackServiceServer
-	feedbacks     []*pb.Feedback
-	historyClient *client.HistoryClient
+	repo *repository.FeedbackRepository
 }
 
-func NewFeedbackServer() *FeedbackServer {
-	return &FeedbackServer{
-		feedbacks:     []*pb.Feedback{},
-		historyClient: client.NewHistoryClient(),
-	}
+// NewFeedbackService creates a new FeedbackService
+func NewFeedbackService(repo *repository.FeedbackRepository) *FeedbackService {
+	return &FeedbackService{repo: repo}
 }
 
-func (s *FeedbackServer) CreateFeedback(ctx context.Context, req *pb.CreateFeedbackRequest) (*pb.FeedbackResponse, error) {
-	feedback := &pb.Feedback{
-		FeedbackId: uuid.New().String(),
-		UserId:     req.UserId,
-		RouteId:    req.RouteId,
-		Rating:     req.Rating,
-		Review:     req.Review,
-		CreatedAt:  time.Now().Format(time.RFC3339),
+// CreateFeedback saves a new feedback via gRPC
+func (s *FeedbackService) CreateFeedback(ctx context.Context, req *pb.CreateFeedbackRequest) (*pb.FeedbackResponse, error) {
+	feedback := &models.Feedback{
+		UserID:     req.UserId,
+		RouteID:    req.RouteId,
+		LocationID: req.LocationId,
+		Rating:     int(req.Rating),
+		Comment:    req.Comment,
 	}
 
-	s.feedbacks = append(s.feedbacks, feedback)
-
-	s.historyClient.UpdateStatus(req.RouteId, "completed")
+	err := s.repo.Create(feedback)
+	if err != nil {
+		return nil, err
+	}
 
 	return &pb.FeedbackResponse{
-		Feedback: feedback,
+		Feedback: &pb.Feedback{
+			FeedbackId: feedback.ID,
+			UserId:     feedback.UserID,
+			RouteId:    feedback.RouteID,
+			LocationId: feedback.LocationID,
+			Rating:     int32(feedback.Rating),
+			Comment:    feedback.Comment,
+			CreatedAt:  feedback.CreatedAt.String(),
+		},
 	}, nil
 }
 
-func (s *FeedbackServer) GetFeedbackByRoute(ctx context.Context, req *pb.GetFeedbackByRouteRequest) (*pb.FeedbackListResponse, error) {
-	var result []*pb.Feedback
-
-	for _, feedback := range s.feedbacks {
-		if feedback.RouteId == req.RouteId {
-			result = append(result, feedback)
-		}
+// GetFeedbackByRoute returns all feedbacks for a route via gRPC
+func (s *FeedbackService) GetFeedbackByRoute(ctx context.Context, req *pb.GetFeedbackByRouteRequest) (*pb.FeedbackListResponse, error) {
+	feedbacks, err := s.repo.GetByRouteID(req.RouteId)
+	if err != nil {
+		return nil, err
 	}
 
-	return &pb.FeedbackListResponse{
-		Feedbacks: result,
-	}, nil
+	var result []*pb.Feedback
+	for _, f := range feedbacks {
+		result = append(result, &pb.Feedback{
+			FeedbackId: f.ID,
+			UserId:     f.UserID,
+			RouteId:    f.RouteID,
+			LocationId: f.LocationID,
+			Rating:     int32(f.Rating),
+			Comment:    f.Comment,
+			CreatedAt:  f.CreatedAt.String(),
+		})
+	}
+
+	return &pb.FeedbackListResponse{Feedbacks: result}, nil
 }
 
-func (s *FeedbackServer) GetFeedbackByUser(ctx context.Context, req *pb.GetFeedbackByUserRequest) (*pb.FeedbackListResponse, error) {
-	var result []*pb.Feedback
-
-	for _, feedback := range s.feedbacks {
-		if feedback.UserId == req.UserId {
-			result = append(result, feedback)
-		}
+// GetFeedbackByUser returns all feedbacks for a user via gRPC
+func (s *FeedbackService) GetFeedbackByUser(ctx context.Context, req *pb.GetFeedbackByUserRequest) (*pb.FeedbackListResponse, error) {
+	feedbacks, err := s.repo.GetByUserID(req.UserId)
+	if err != nil {
+		return nil, err
 	}
 
-	return &pb.FeedbackListResponse{
-		Feedbacks: result,
-	}, nil
+	var result []*pb.Feedback
+	for _, f := range feedbacks {
+		result = append(result, &pb.Feedback{
+			FeedbackId: f.ID,
+			UserId:     f.UserID,
+			RouteId:    f.RouteID,
+			LocationId: f.LocationID,
+			Rating:     int32(f.Rating),
+			Comment:    f.Comment,
+			CreatedAt:  f.CreatedAt.String(),
+		})
+	}
+
+	return &pb.FeedbackListResponse{Feedbacks: result}, nil
 }
