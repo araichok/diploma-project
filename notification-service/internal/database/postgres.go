@@ -21,4 +21,7 @@ func Connect() *sql.DB {
 		host, port, user, password, dbname,
 	)
 
-	
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
