@@ -1,8 +1,15 @@
 package model
 
+import "time"
+
 type Preference struct {
-	UserID    string `bson:"user_id"`
-	Mood      string `bson:"mood"`
-	TimeOfDay string `bson:"time_of_day"`
-	Budget    string `bson:"budget"`
+	ID         int64
+	UserID     string
+	Mood       string
+	Budget     int32
+	Duration   int32
+	Location   string
+	TravelDate string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
