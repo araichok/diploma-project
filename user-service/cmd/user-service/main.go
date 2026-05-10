@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"user-service/internal/messaging"
 
 	"user-service/internal/cache"
 	"user-service/internal/config"
@@ -35,6 +36,11 @@ func main() {
 
 	// Repository
 	userRepo := repository.NewUserRepository(conn)
+
+	err = messaging.StartUserCheckSubscriber(userRepo)
+	if err != nil {
+		log.Fatal("Failed to start NATS subscriber:", err)
+	}
 
 	// Cache
 	userCache := cache.NewUserCache(redisClient)
