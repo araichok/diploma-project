@@ -7,12 +7,11 @@
 package routehistory
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -414,12 +413,13 @@ var File_proto_route_history_proto protoreflect.FileDescriptor
 
 const file_proto_route_history_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/route_history.proto\x12\froutehistory\"i\n" +
+	"\x19proto/route_history.proto\x12\froutehistory\"}\n" +
 	"\x14CreateHistoryRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\broute_id\x18\x02 \x01(\tR\arouteId\x12\x1d\n" +
 	"\n" +
-	"route_name\x18\x03 \x01(\tR\trouteName\"0\n" +
+	"route_name\x18\x03 \x01(\tR\trouteName\x12\x12\n" +
+	"\x04mood\x18\x04 \x01(\tR\x04mood\"0\n" +
 	"\x15GetUserHistoryRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"6\n" +
 	"\x15GetHistoryByIdRequest\x12\x1d\n" +
@@ -427,17 +427,18 @@ const file_proto_route_history_proto_rawDesc = "" +
 	"history_id\x18\x01 \x01(\tR\thistoryId\"O\n" +
 	"\x1aUpdateHistoryStatusRequest\x12\x19\n" +
 	"\broute_id\x18\x01 \x01(\tR\arouteId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"\xb2\x01\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"\xc6\x01\n" +
 	"\aHistory\x12\x1d\n" +
 	"\n" +
 	"history_id\x18\x01 \x01(\tR\thistoryId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
 	"\broute_id\x18\x03 \x01(\tR\arouteId\x12\x1d\n" +
 	"\n" +
-	"route_name\x18\x04 \x01(\tR\trouteName\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1d\n" +
+	"route_name\x18\x04 \x01(\tR\trouteName\x12\x12\n" +
+	"\x04mood\x18\x05 \x01(\tR\x04mood\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\"B\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\"B\n" +
 	"\x0fHistoryResponse\x12/\n" +
 	"\ahistory\x18\x01 \x01(\v2\x15.routehistory.HistoryR\ahistory\"J\n" +
 	"\x13HistoryListResponse\x123\n" +

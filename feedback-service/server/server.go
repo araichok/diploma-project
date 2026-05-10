@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+
 	"time"
 
 	"github.com/google/uuid"
@@ -25,8 +26,9 @@ func (s *FeedbackServer) CreateFeedback(ctx context.Context, req *pb.CreateFeedb
 		FeedbackId: uuid.New().String(),
 		UserId:     req.UserId,
 		RouteId:    req.RouteId,
+		LocationId: req.LocationId,
 		Rating:     req.Rating,
-		Review:     req.Review,
+		Comment:    req.Comment,
 		CreatedAt:  time.Now().Format(time.RFC3339),
 	}
 
@@ -39,28 +41,20 @@ func (s *FeedbackServer) CreateFeedback(ctx context.Context, req *pb.CreateFeedb
 
 func (s *FeedbackServer) GetFeedbackByRoute(ctx context.Context, req *pb.GetFeedbackByRouteRequest) (*pb.FeedbackListResponse, error) {
 	var result []*pb.Feedback
-
 	for _, feedback := range s.feedbacks {
 		if feedback.RouteId == req.RouteId {
 			result = append(result, feedback)
 		}
 	}
-
-	return &pb.FeedbackListResponse{
-		Feedbacks: result,
-	}, nil
+	return &pb.FeedbackListResponse{Feedbacks: result}, nil
 }
 
 func (s *FeedbackServer) GetFeedbackByUser(ctx context.Context, req *pb.GetFeedbackByUserRequest) (*pb.FeedbackListResponse, error) {
 	var result []*pb.Feedback
-
 	for _, feedback := range s.feedbacks {
 		if feedback.UserId == req.UserId {
 			result = append(result, feedback)
 		}
 	}
-
-	return &pb.FeedbackListResponse{
-		Feedbacks: result,
-	}, nil
+	return &pb.FeedbackListResponse{Feedbacks: result}, nil
 }
