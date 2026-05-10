@@ -2,73 +2,99 @@ package handler
 
 import (
 	"context"
-
 	"preference-service/internal/model"
-	"preference-service/internal/repository"
 	"preference-service/internal/service"
-	pb "preference-service/proto"
+	pb "preference-service/proto/preferencepb"
 )
 
 type PreferenceHandler struct {
 	pb.UnimplementedPreferenceServiceServer
 	service *service.PreferenceService
-	repo    *repository.PreferenceRepository
 }
 
-func NewPreferenceHandler(s *service.PreferenceService, r *repository.PreferenceRepository) *PreferenceHandler {
-	return &PreferenceHandler{
-		service: s,
-		repo:    r,
+func NewPreferenceHandler(service *service.PreferenceService) *PreferenceHandler {
+	return &PreferenceHandler{service: service}
+}
+
+func modelToProto(p *model.Preference) *pb.Preference {
+	return &pb.Preference{
+		Id:         p.ID,
+		UserId:     p.UserID,
+		Mood:       p.Mood,
+		Budget:     p.Budget,
+		Duration:   p.Duration,
+		Location:   p.Location,
+		TravelDate: p.TravelDate,
+		CreatedAt:  p.CreatedAt.String(),
+		UpdatedAt:  p.UpdatedAt.String(),
 	}
 }
 
-// 🧠 логика
-func (h *PreferenceHandler) GetPreferences(ctx context.Context, req *pb.PreferenceRequest) (*pb.PreferenceResponse, error) {
-
-	pref := model.Preference{
-		UserID:    req.UserId,
-		Mood:      req.Mood,
-		TimeOfDay: req.TimeOfDay,
-		Budget:    req.Budget,
+func (h *PreferenceHandler) CreatePreference(ctx context.Context, req *pb.CreatePreferenceRequest) (*pb.PreferenceResponse, error) {
+	p := &model.Preference{
+		UserID:     req.UserId,
+		Mood:       req.Mood,
+		Budget:     req.Budget,
+		Duration:   req.Duration,
+		Location:   req.Location,
+		TravelDate: req.TravelDate,
 	}
 
-	categories := h.service.GetCategories(pref)
+	created, err := h.service.CreatePreference(p)
+	if err != nil {
+		return nil, err
+	}
 
 	return &pb.PreferenceResponse{
-		Categories: categories,
+		Preference: modelToProto(created),
 	}, nil
 }
 
-// 💾 сохранить
-func (h *PreferenceHandler) SavePreferences(ctx context.Context, req *pb.PreferenceRequest) (*pb.Empty, error) {
-
-	pref := model.Preference{
-		UserID:    req.UserId,
-		Mood:      req.Mood,
-		TimeOfDay: req.TimeOfDay,
-		Budget:    req.Budget,
-	}
-
-	err := h.repo.Save(pref)
+func (h *PreferenceHandler) GetPreferenceHistory(ctx context.Context, req *pb.UserPreferenceRequest) (*pb.PreferenceHistoryResponse, error) {
+	preferences, err := h.service.GetPreferenceHistory(req.UserId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.Empty{}, nil
+	var result []*pb.Preference
+
+	for _, p := range preferences {
+		result = append(result, modelToProto(p))
+	}
+
+	return &pb.PreferenceHistoryResponse{
+		Preferences: result,
+	}, nil
 }
 
-// 📥 получить
-func (h *PreferenceHandler) GetUserPreferences(ctx context.Context, req *pb.UserRequest) (*pb.PreferenceRequest, error) {
+func (h *PreferenceHandler) UpdatePreference(ctx context.Context, req *pb.UpdatePreferenceRequest) (*pb.PreferenceResponse, error) {
+	p := &model.Preference{
+		ID:         req.Id,
+		UserID:     req.UserId,
+		Mood:       req.Mood,
+		Budget:     req.Budget,
+		Duration:   req.Duration,
+		Location:   req.Location,
+		TravelDate: req.TravelDate,
+	}
 
-	pref, err := h.repo.GetByUserID(req.UserId)
+	updated, err := h.service.UpdatePreference(p)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.PreferenceRequest{
-		UserId:    pref.UserID,
-		Mood:      pref.Mood,
-		TimeOfDay: pref.TimeOfDay,
-		Budget:    pref.Budget,
+	return &pb.PreferenceResponse{
+		Preference: modelToProto(updated),
+	}, nil
+}
+
+func (h *PreferenceHandler) DeletePreference(ctx context.Context, req *pb.DeletePreferenceRequest) (*pb.DeletePreferenceResponse, error) {
+	err := h.service.DeletePreference(req.Id, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.DeletePreferenceResponse{
+		Message: "Preference deleted successfully",
 	}, nil
 }
