@@ -7,3 +7,7 @@ import (
 type NotificationRepository struct {
 	db *sql.DB
 }
+
+func NewNotificationRepository(db *sql.DB) *NotificationRepository {
+	return &NotificationRepository{db: db}
+}
