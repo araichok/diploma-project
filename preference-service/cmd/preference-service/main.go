@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 
+	"preference-service/internal/cache"
 	"preference-service/internal/database"
 	"preference-service/internal/handler"
 	"preference-service/internal/messaging"
@@ -28,6 +29,11 @@ func main() {
 	}
 	defer db.Close()
 
+	redisClient := cache.NewRedisClient()
+	defer redisClient.Close()
+
+	preferenceCache := cache.NewPreferenceCache(redisClient)
+
 	userNATSClient, err := messaging.NewUserNATSClient()
 	if err != nil {
 		log.Fatal("Failed to connect to NATS:", err)
@@ -38,6 +44,7 @@ func main() {
 	preferenceService := service.NewPreferenceService(
 		preferenceRepo,
 		userNATSClient,
+		preferenceCache,
 	)
 
 	preferenceHandler := handler.NewPreferenceHandler(preferenceService)

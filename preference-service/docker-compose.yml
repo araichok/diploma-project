@@ -8,8 +8,17 @@ services:
       - "50052:50052"
     depends_on:
       - postgres
+      - redis
     env_file:
       - .env
+
+
+  redis:
+    image: redis:7
+    container_name: preference_redis
+    restart: always
+    ports:
+      - "6380:6379"
 
 
 
@@ -21,6 +30,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: preference_db
+
 
 
     ports:
