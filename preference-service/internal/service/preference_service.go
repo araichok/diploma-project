@@ -1,36 +1,53 @@
 package service
 
-import "preference-service/internal/model"
+import (
+	"log"
 
-type PreferenceService struct{}
+	"preference-service/internal/messaging"
+	"preference-service/internal/model"
+	"preference-service/internal/repository"
+)
 
-func NewPreferenceService() *PreferenceService {
-	return &PreferenceService{}
+type PreferenceService struct {
+	repo       *repository.PreferenceRepository
+	userClient *messaging.UserNATSClient
 }
 
-// основная логика
-func (s *PreferenceService) GetCategories(pref model.Preference) []string {
+func NewPreferenceService(
+	repo *repository.PreferenceRepository,
+	userClient *messaging.UserNATSClient,
+) *PreferenceService {
+	return &PreferenceService{
+		repo:       repo,
+		userClient: userClient,
+	}
+}
 
-	categories := []string{}
+func (s *PreferenceService) CreatePreference(p *model.Preference) (*model.Preference, error) {
 
-	switch pref.Mood {
-	case "relax":
-		categories = []string{"park", "cafe"}
-	case "adventure":
-		categories = []string{"hiking", "sports"}
-	case "romantic":
-		categories = []string{"restaurant", "viewpoint"}
-	default:
-		categories = []string{"cafe"}
+	log.Println("[Preference Service] CreatePreference started for user_id:", p.UserID)
+
+	err := s.userClient.CheckUserExists(p.UserID)
+	if err != nil {
+
+		log.Println("[Preference Service] User verification failed:", err)
+
+		return nil, err
 	}
 
-	if pref.TimeOfDay == "evening" {
-		categories = append(categories, "restaurant")
-	}
+	log.Println("[Preference Service] User verified, saving preference")
 
-	if pref.Budget == "low" {
-		categories = append(categories, "free_attraction")
-	}
+	return s.repo.Create(p)
+}
 
-	return categories
+func (s *PreferenceService) GetPreferenceHistory(userID string) ([]*model.Preference, error) {
+	return s.repo.GetHistory(userID)
+}
+
+func (s *PreferenceService) UpdatePreference(p *model.Preference) (*model.Preference, error) {
+	return s.repo.Update(p)
+}
+
+func (s *PreferenceService) DeletePreference(id int64, userID string) error {
+	return s.repo.Delete(id, userID)
 }
