@@ -33,3 +33,10 @@ func Connect() *sql.DB {
 	log.Println("connected to PostgreSQL successfully")
 	return db
 }
+
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
