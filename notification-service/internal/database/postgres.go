@@ -25,3 +25,11 @@ func Connect() *sql.DB {
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
+
+	if err = db.Ping(); err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+
+	log.Println("connected to PostgreSQL successfully")
+	return db
+}
