@@ -195,3 +195,20 @@ func (r *UserRepository) UpdatePassword(userID, passwordHash string) error {
 
 	return err
 }
+
+func (r *UserRepository) ExistsByID(id string) (bool, error) {
+	var exists bool
+
+	query := `
+		SELECT EXISTS(
+			SELECT 1 FROM users WHERE id = $1
+		)
+	`
+
+	err := r.db.QueryRow(context.Background(), query, id).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
