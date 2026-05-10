@@ -29,7 +29,7 @@ const (
 	UserService_ChangePassword_FullMethodName = "/user.UserService/ChangePassword"
 )
 
-// UserServiceClient is the client API for UserService service.
+// UserServiceClient is the messaging API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
