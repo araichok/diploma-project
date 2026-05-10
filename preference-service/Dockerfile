@@ -1,22 +1,16 @@
-FROM golang:1.22 AS builder
+FROM golang:1.25
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY go.mod ./
+COPY go.sum ./
+
 RUN go mod download
 
 COPY . .
 
-# 🔥 ВАЖНО — статическая сборка
-RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/main.go
-
-
-FROM gcr.io/distroless/base-debian11
-
-WORKDIR /app
-
-COPY --from=builder /app/app .
+RUN go build -o preference-service ./cmd/preference-service
 
 EXPOSE 50052
 
-CMD ["./app"]
+CMD ["./preference-service"]
