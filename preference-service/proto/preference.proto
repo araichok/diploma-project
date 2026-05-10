@@ -2,30 +2,64 @@ syntax = "proto3";
 
 package preference;
 
-option go_package = "proto/";
+option go_package = "./proto/preferencepb";
 
 service PreferenceService {
+  rpc CreatePreference(CreatePreferenceRequest) returns (PreferenceResponse);
+  rpc GetPreferenceHistory(UserPreferenceRequest) returns (PreferenceHistoryResponse);
+  rpc UpdatePreference(UpdatePreferenceRequest) returns (PreferenceResponse);
+  rpc DeletePreference(DeletePreferenceRequest) returns (DeletePreferenceResponse);
 
-  rpc GetPreferences (PreferenceRequest) returns (PreferenceResponse);
-
-  rpc SavePreferences (PreferenceRequest) returns (Empty);
-
-  rpc GetUserPreferences (UserRequest) returns (PreferenceRequest);
 }
 
-message PreferenceRequest {
+message Preference {
+  int64 id = 1;
+  string user_id = 2;
+  string mood = 3;
+  int32 budget = 4;
+  int32 duration = 5;
+  string location = 6;
+  string travel_date = 7;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message CreatePreferenceRequest {
   string user_id = 1;
   string mood = 2;
-  string time_of_day = 3;
-  string budget = 4;
+  int32 budget = 3;
+  int32 duration = 4;
+  string location = 5;
+  string travel_date = 6;
+}
+
+message UpdatePreferenceRequest {
+  int64 id = 1;
+  string user_id = 2;
+  string mood = 3;
+  int32 budget = 4;
+  int32 duration = 5;
+  string location = 6;
+  string travel_date = 7;
+}
+
+message DeletePreferenceRequest {
+  int64 id = 1;
+  string user_id = 2;
+}
+
+message UserPreferenceRequest {
+  string user_id = 1;
 }
 
 message PreferenceResponse {
-  repeated string categories = 1;
+  Preference preference = 1;
 }
 
-message UserRequest {
-  string user_id = 1;
+message PreferenceHistoryResponse {
+  repeated Preference preferences = 1;
 }
 
-message Empty {}
+message DeletePreferenceResponse {
+  string message = 1;
+}
