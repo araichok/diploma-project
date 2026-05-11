@@ -67,3 +67,11 @@ func (r *AdminRepository) DeleteAdmin(id string) error {
 	_, err := r.db.Exec(`DELETE FROM admins WHERE id = $1`, id)
 	return err
 }
+
+func (r *AdminRepository) GetStats() (*model.AdminStats, error) {
+	stats := &model.AdminStats{}
+
+	r.db.QueryRow(`SELECT COUNT(*) FROM admins`).Scan(&stats.TotalUsers)
+
+	return stats, nil
+}
