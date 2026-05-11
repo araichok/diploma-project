@@ -49,3 +49,26 @@ func (h *NotificationHandler) SendNotification(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(notification)
 }
+
+// GET /notifications?user_id=xxx
+func (h *NotificationHandler) GetUserNotifications(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	notifications, err := h.service.GetUserNotifications(userID)
+	if err != nil {
+		http.Error(w, "failed to fetch notifications", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(notifications)
+}
