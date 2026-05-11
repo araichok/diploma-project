@@ -27,3 +27,8 @@ func (s *NotificationService) SendNotification(userID, message, notifType string
 
 	return notification, nil
 }
+
+// returns all notifications for a user
+func (s *NotificationService) GetUserNotifications(userID string) ([]model.Notification, error) {
+	return s.repo.GetByUserID(userID)
+}
