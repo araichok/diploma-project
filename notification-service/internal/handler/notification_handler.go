@@ -11,12 +11,10 @@ type NotificationHandler struct {
 	service *service.NotificationService
 }
 
-// NewNotificationHandler creates a new NotificationHandler
 func NewNotificationHandler(service *service.NotificationService) *NotificationHandler {
 	return &NotificationHandler{service: service}
 }
 
-// POST /notifications
 func (h *NotificationHandler) SendNotification(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -118,4 +116,27 @@ func (h *NotificationHandler) MarkAllAsRead(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "all notifications marked as read"})
+}
+
+// GET /notifications/unread-count?user_id=xxx
+func (h *NotificationHandler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	count, err := h.service.GetUnreadCount(userID)
+	if err != nil {
+		http.Error(w, "failed to get unread count", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"unread_count": count})
 }
