@@ -33,7 +33,6 @@ func (r *AdminRepository) CreateAdmin(userID, role string) (*model.Admin, error)
 	return admin, nil
 }
 
-// GetAllAdmins returns all adms
 func (r *AdminRepository) GetAllAdmins() ([]model.Admin, error) {
 	rows, err := r.db.Query(
 		`SELECT id, user_id, role, created_at FROM admins ORDER BY created_at DESC`,
@@ -53,4 +52,18 @@ func (r *AdminRepository) GetAllAdmins() ([]model.Admin, error) {
 		admins = append(admins, a)
 	}
 	return admins, nil
+}
+
+func (r *AdminRepository) IsAdmin(userID string) (bool, error) {
+	var count int
+	err := r.db.QueryRow(
+		`SELECT COUNT(*) FROM admins WHERE user_id = $1`,
+		userID,
+	).Scan(&count)
+	return count > 0, err
+}
+
+func (r *AdminRepository) DeleteAdmin(id string) error {
+	_, err := r.db.Exec(`DELETE FROM admins WHERE id = $1`, id)
+	return err
 }
