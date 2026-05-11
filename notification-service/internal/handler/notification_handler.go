@@ -72,3 +72,26 @@ func (h *NotificationHandler) GetUserNotifications(w http.ResponseWriter, r *htt
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notifications)
 }
+
+// PUT /notifications/read?id=xxx
+func (h *NotificationHandler) MarkAsRead(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.MarkAsRead(id)
+	if err != nil {
+		http.Error(w, "failed to mark as read", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "notification marked as read"})
+}
