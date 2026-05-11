@@ -1,12 +1,12 @@
 package model
 
 type Location struct {
-	ID          string
-	Name        string
-	Description string
-	City        string
-	Category    string
-	Latitude    float64
-	Longitude   float64
-	Rating      float64
+	ID      int
+	PlaceID string
+	Name    string
+	Type    string
+	City    string
+	Lat     float64
+	Lon     float64
+	Mood    string
 }
