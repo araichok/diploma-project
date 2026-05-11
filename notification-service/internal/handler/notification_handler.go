@@ -11,6 +11,7 @@ type NotificationHandler struct {
 	service *service.NotificationService
 }
 
+// NewNotificationHandler creates a new NotificationHandler
 func NewNotificationHandler(service *service.NotificationService) *NotificationHandler {
 	return &NotificationHandler{service: service}
 }
@@ -94,4 +95,27 @@ func (h *NotificationHandler) MarkAsRead(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"message": "notification marked as read"})
+}
+
+// PUT /notifications/read-all?user_id=xxx
+func (h *NotificationHandler) MarkAllAsRead(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.MarkAllAsRead(userID)
+	if err != nil {
+		http.Error(w, "failed to mark all as read", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "all notifications marked as read"})
 }
