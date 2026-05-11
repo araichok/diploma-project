@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"route-history-service/internal/repository"
 	"route-history-service/models"
@@ -21,6 +22,7 @@ func NewRouteHistoryService(repo *repository.RouteHistoryRepository) *RouteHisto
 
 // CreateHistory saves a new route history entry via gRPC
 func (s *RouteHistoryService) CreateHistory(ctx context.Context, req *pb.CreateHistoryRequest) (*pb.HistoryResponse, error) {
+	fmt.Println("DEBUG - Received mood:", req.Mood)
 	history := &models.RouteHistory{
 		UserID:    req.UserId,
 		RouteID:   req.RouteId,
