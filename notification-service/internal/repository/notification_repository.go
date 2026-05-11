@@ -69,7 +69,6 @@ func (r *NotificationRepository) MarkAllAsRead(userID string) error {
 	return err
 }
 
-// unr
 func (r *NotificationRepository) GetUnreadCount(userID string) (int, error) {
 	var count int
 	err := r.db.QueryRow(
@@ -77,4 +76,9 @@ func (r *NotificationRepository) GetUnreadCount(userID string) (int, error) {
 		userID,
 	).Scan(&count)
 	return count, err
+}
+
+func (r *NotificationRepository) Delete(id string) error {
+	_, err := r.db.Exec(`DELETE FROM notifications WHERE id = $1`, id)
+	return err
 }
