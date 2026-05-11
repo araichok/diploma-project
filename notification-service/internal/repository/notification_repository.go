@@ -13,11 +13,12 @@ type NotificationRepository struct {
 	db *sql.DB
 }
 
-// NewNotificationRepository creates a new NotificationRepository
+// new NotificationRepository
 func NewNotificationRepository(db *sql.DB) *NotificationRepository {
 	return &NotificationRepository{db: db}
 }
 
+// new notif
 func (r *NotificationRepository) Create(n *model.Notification) error {
 	n.ID = uuid.New().String()
 	n.IsRead = false
@@ -32,6 +33,7 @@ func (r *NotificationRepository) Create(n *model.Notification) error {
 	return err
 }
 
+// specific user
 func (r *NotificationRepository) GetByUserID(userID string) ([]model.Notification, error) {
 	rows, err := r.db.Query(
 		`SELECT id, user_id, message, type, is_read, created_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC`,
@@ -52,4 +54,13 @@ func (r *NotificationRepository) GetByUserID(userID string) ([]model.Notificatio
 		notifications = append(notifications, n)
 	}
 	return notifications, nil
+}
+
+// read
+func (r *NotificationRepository) MarkAsRead(id string) error {
+	_, err := r.db.Exec(
+		`UPDATE notifications SET is_read = TRUE WHERE id = $1`,
+		id,
+	)
+	return err
 }
