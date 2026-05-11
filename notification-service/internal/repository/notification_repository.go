@@ -13,6 +13,7 @@ type NotificationRepository struct {
 	db *sql.DB
 }
 
+// NewNotificationRepository creates a new NotificationRepository
 func NewNotificationRepository(db *sql.DB) *NotificationRepository {
 	return &NotificationRepository{db: db}
 }
@@ -29,4 +30,26 @@ func (r *NotificationRepository) Create(n *model.Notification) error {
 		n.ID, n.UserID, n.Message, n.Type, n.IsRead, n.CreatedAt,
 	)
 	return err
+}
+
+func (r *NotificationRepository) GetByUserID(userID string) ([]model.Notification, error) {
+	rows, err := r.db.Query(
+		`SELECT id, user_id, message, type, is_read, created_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC`,
+		userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var notifications []model.Notification
+	for rows.Next() {
+		var n model.Notification
+		err := rows.Scan(&n.ID, &n.UserID, &n.Message, &n.Type, &n.IsRead, &n.CreatedAt)
+		if err != nil {
+			continue
+		}
+		notifications = append(notifications, n)
+	}
+	return notifications, nil
 }
