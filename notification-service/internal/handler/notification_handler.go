@@ -15,6 +15,7 @@ func NewNotificationHandler(service *service.NotificationService) *NotificationH
 	return &NotificationHandler{service: service}
 }
 
+// POST /notifications
 func (h *NotificationHandler) SendNotification(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -32,3 +33,19 @@ func (h *NotificationHandler) SendNotification(w http.ResponseWriter, r *http.Re
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}
+
+	if req.UserID == "" || req.Message == "" || req.Type == "" {
+		http.Error(w, "user_id, message and type are required", http.StatusBadRequest)
+		return
+	}
+
+	notification, err := h.service.SendNotification(req.UserID, req.Message, req.Type)
+	if err != nil {
+		http.Error(w, "failed to send notification", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(notification)
+}
