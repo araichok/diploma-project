@@ -39,3 +39,11 @@ func (s *NotificationService) MarkAsRead(id string) error {
 func (s *NotificationService) MarkAllAsRead(userID string) error {
 	return s.repo.MarkAllAsRead(userID)
 }
+
+func (s *NotificationService) GetUnreadCount(userID string) (int, error) {
+	return s.repo.GetUnreadCount(userID)
+}
+
+func (s *NotificationService) DeleteNotification(id string) error {
+	return s.repo.Delete(id)
+}
