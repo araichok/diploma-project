@@ -15,3 +15,10 @@ type AdminStats struct {
 	TotalFeedbacks     int `json:"total_feedbacks"`
 	TotalNotifications int `json:"total_notifications"`
 }
+
+type UserReport struct {
+	UserID         string  `json:"user_id"`
+	TotalRoutes    int     `json:"total_routes"`
+	TotalFeedbacks int     `json:"total_feedbacks"`
+	AverageRating  float64 `json:"average_rating"`
+}
