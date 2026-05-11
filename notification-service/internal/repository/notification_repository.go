@@ -18,7 +18,6 @@ func NewNotificationRepository(db *sql.DB) *NotificationRepository {
 	return &NotificationRepository{db: db}
 }
 
-// new notif
 func (r *NotificationRepository) Create(n *model.Notification) error {
 	n.ID = uuid.New().String()
 	n.IsRead = false
@@ -33,7 +32,7 @@ func (r *NotificationRepository) Create(n *model.Notification) error {
 	return err
 }
 
-// specific user
+// returns  notifs for specific user
 func (r *NotificationRepository) GetByUserID(userID string) ([]model.Notification, error) {
 	rows, err := r.db.Query(
 		`SELECT id, user_id, message, type, is_read, created_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC`,
@@ -61,6 +60,15 @@ func (r *NotificationRepository) MarkAsRead(id string) error {
 	_, err := r.db.Exec(
 		`UPDATE notifications SET is_read = TRUE WHERE id = $1`,
 		id,
+	)
+	return err
+}
+
+// marks notifs as read foruser
+func (r *NotificationRepository) MarkAllAsRead(userID string) error {
+	_, err := r.db.Exec(
+		`UPDATE notifications SET is_read = TRUE WHERE user_id = $1`,
+		userID,
 	)
 	return err
 }
