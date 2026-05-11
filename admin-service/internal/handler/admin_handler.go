@@ -51,3 +51,41 @@ func (h *AdminHandler) AddAdmin(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(admin)
 }
+
+func (h *AdminHandler) GetAllAdmins(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	admins, err := h.service.GetAllAdmins()
+	if err != nil {
+		http.Error(w, "failed to fetch admins", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(admins)
+}
+
+func (h *AdminHandler) CheckAdmin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	isAdmin, err := h.service.IsAdmin(userID)
+	if err != nil {
+		http.Error(w, "failed to check admin status", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"is_admin": isAdmin})
+}
