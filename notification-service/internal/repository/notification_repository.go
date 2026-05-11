@@ -13,7 +13,6 @@ type NotificationRepository struct {
 	db *sql.DB
 }
 
-// new NotificationRepository
 func NewNotificationRepository(db *sql.DB) *NotificationRepository {
 	return &NotificationRepository{db: db}
 }
@@ -32,7 +31,6 @@ func (r *NotificationRepository) Create(n *model.Notification) error {
 	return err
 }
 
-// returns  notifs for specific user
 func (r *NotificationRepository) GetByUserID(userID string) ([]model.Notification, error) {
 	rows, err := r.db.Query(
 		`SELECT id, user_id, message, type, is_read, created_at FROM notifications WHERE user_id = $1 ORDER BY created_at DESC`,
@@ -55,7 +53,6 @@ func (r *NotificationRepository) GetByUserID(userID string) ([]model.Notificatio
 	return notifications, nil
 }
 
-// read
 func (r *NotificationRepository) MarkAsRead(id string) error {
 	_, err := r.db.Exec(
 		`UPDATE notifications SET is_read = TRUE WHERE id = $1`,
@@ -64,11 +61,20 @@ func (r *NotificationRepository) MarkAsRead(id string) error {
 	return err
 }
 
-// marks notifs as read foruser
 func (r *NotificationRepository) MarkAllAsRead(userID string) error {
 	_, err := r.db.Exec(
 		`UPDATE notifications SET is_read = TRUE WHERE user_id = $1`,
 		userID,
 	)
 	return err
+}
+
+// unr
+func (r *NotificationRepository) GetUnreadCount(userID string) (int, error) {
+	var count int
+	err := r.db.QueryRow(
+		`SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = FALSE`,
+		userID,
+	).Scan(&count)
+	return count, err
 }
