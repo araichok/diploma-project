@@ -24,3 +24,11 @@ func (s *AdminService) GetAllAdmins() ([]model.Admin, error) {
 func (s *AdminService) IsAdmin(userID string) (bool, error) {
 	return s.repo.IsAdmin(userID)
 }
+
+func (s *AdminService) RemoveAdmin(id string) error {
+	return s.repo.DeleteAdmin(id)
+}
+
+func (s *AdminService) GetSystemStats() (*model.AdminStats, error) {
+	return s.repo.GetStats()
+}
