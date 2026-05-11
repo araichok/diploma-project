@@ -32,3 +32,25 @@ func (r *AdminRepository) CreateAdmin(userID, role string) (*model.Admin, error)
 	}
 	return admin, nil
 }
+
+// GetAllAdmins returns all adms
+func (r *AdminRepository) GetAllAdmins() ([]model.Admin, error) {
+	rows, err := r.db.Query(
+		`SELECT id, user_id, role, created_at FROM admins ORDER BY created_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var admins []model.Admin
+	for rows.Next() {
+		var a model.Admin
+		err := rows.Scan(&a.ID, &a.UserID, &a.Role, &a.CreatedAt)
+		if err != nil {
+			continue
+		}
+		admins = append(admins, a)
+	}
+	return admins, nil
+}
