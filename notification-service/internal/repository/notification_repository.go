@@ -25,7 +25,8 @@ func (r *NotificationRepository) Create(n *model.Notification) error {
 	query := `INSERT INTO notifications (id, user_id, message, type, is_read, created_at)
 			  VALUES ($1, $2, $3, $4, $5, $6)`
 
-	
+	_, err := r.db.Exec(query,
+		n.ID, n.UserID, n.Message, n.Type, n.IsRead, n.CreatedAt,
 	)
 	return err
 }
