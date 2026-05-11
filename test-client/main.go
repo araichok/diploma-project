@@ -26,9 +26,10 @@ func main() {
 	routeClient := routepb.NewRouteHistoryServiceClient(routeConn)
 
 	historyReq := &routepb.CreateHistoryRequest{
-		UserId:    "1",
-		RouteId:   "101",
+		UserId:    "user-001",
+		RouteId:   "route-101",
 		RouteName: "Astana City Walk",
+		Mood:      "adventurous",
 	}
 
 	historyRes, err := routeClient.CreateHistory(ctx, historyReq)
@@ -36,10 +37,11 @@ func main() {
 		log.Fatalf("CreateHistory failed: %v", err)
 	}
 
-	fmt.Println("History created successfully")
+	fmt.Println("✅ History created successfully")
 	fmt.Println("History ID:", historyRes.History.HistoryId)
 	fmt.Println("Route ID:", historyRes.History.RouteId)
-	fmt.Println("Status before feedback:", historyRes.History.Status)
+	fmt.Println("Mood:", historyRes.History.Mood)
+	fmt.Println("Status:", historyRes.History.Status)
 	fmt.Println()
 
 	feedbackConn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -51,10 +53,11 @@ func main() {
 	feedbackClient := feedbackpb.NewFeedbackServiceClient(feedbackConn)
 
 	feedbackReq := &feedbackpb.CreateFeedbackRequest{
-		UserId:  "1",
-		RouteId: "101",
-		Rating:  5,
-		Review:  "Amazing tourist route!",
+		UserId:     "user-001",
+		RouteId:    "route-101",
+		LocationId: "location-001",
+		Rating:     5,
+		Comment:    "Amazing tourist route in Astana!",
 	}
 
 	feedbackRes, err := feedbackClient.CreateFeedback(ctx, feedbackReq)
@@ -62,22 +65,24 @@ func main() {
 		log.Fatalf("CreateFeedback failed: %v", err)
 	}
 
-	fmt.Println("Feedback created successfully")
+	fmt.Println("✅ Feedback created successfully")
 	fmt.Println("Feedback ID:", feedbackRes.Feedback.FeedbackId)
 	fmt.Println("Route ID:", feedbackRes.Feedback.RouteId)
+	fmt.Println("Location ID:", feedbackRes.Feedback.LocationId)
 	fmt.Println("Rating:", feedbackRes.Feedback.Rating)
-	fmt.Println("Review:", feedbackRes.Feedback.Review)
+	fmt.Println("Comment:", feedbackRes.Feedback.Comment)
 	fmt.Println()
 
 	updatedHistoryRes, err := routeClient.GetUserHistory(ctx, &routepb.GetUserHistoryRequest{
-		UserId: "1",
+		UserId: "user-001",
 	})
 	if err != nil {
 		log.Fatalf("GetUserHistory failed: %v", err)
 	}
 
-	fmt.Println("Updated history records:")
+	fmt.Println("✅ Updated history records:")
 	for _, h := range updatedHistoryRes.Histories {
-		fmt.Printf("History ID: %s | Route ID: %s | Status: %s\n", h.HistoryId, h.RouteId, h.Status)
+		fmt.Printf("History ID: %s | Route: %s | Mood: %s | Status: %s\n",
+			h.HistoryId, h.RouteName, h.Mood, h.Status)
 	}
 }

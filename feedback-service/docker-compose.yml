@@ -1,0 +1,29 @@
+services:
+  feedback-service:
+    build: .
+    ports:
+      - "50051:50051"
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=feedback_db
+
+  postgres:
+    image: postgres:15
+    container_name: feedback_postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=feedback_db
+    volumes:
+      - feedback_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  feedback_postgres_data:

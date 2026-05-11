@@ -1,0 +1,29 @@
+services:
+  admin-service:
+    build: .
+    ports:
+      - "8084:8084"
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=admin_db
+
+  postgres:
+    image: postgres:15
+    container_name: admin_postgres
+    restart: always
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=admin_db
+    volumes:
+      - admin_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  admin_postgres_data:
