@@ -1,26 +1,28 @@
 services:
   route-history-service:
     build: .
-    ports:
-      - "50052:50052"
+    container_name: route_history_service
+    restart: always
     depends_on:
       - postgres
+    ports:
+      - "50052:50052"
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=12345
       - DB_NAME=route_history_db
 
   postgres:
-    image: postgres:15
+    image: postgres:16
     container_name: route_history_postgres
     restart: always
     ports:
       - "5434:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=route_history_db
     volumes:
       - route_history_postgres_data:/var/lib/postgresql/data
