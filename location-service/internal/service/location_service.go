@@ -1,17 +1,14 @@
 package service
 
 import (
-	"context"
 	"log"
 
 	"location-service/internal/client"
 	"location-service/internal/model"
 	"location-service/internal/repository"
-	locationpb "location-service/proto/locationpb"
 )
 
 type LocationService struct {
-	locationpb.UnimplementedLocationServiceServer
 	repo *repository.LocationRepository
 }
 
@@ -25,28 +22,25 @@ func NewLocationService(
 }
 
 func (s *LocationService) FindSuitableLocations(
-	ctx context.Context,
-	req *locationpb.FindLocationsRequest,
-) (*locationpb.FindLocationsResponse, error) {
+	mood string,
+	locationName string,
+) ([]model.Location, error) {
 
 	log.Println("FindSuitableLocations request:")
-	log.Println("Mood:", req.Mood)
-	log.Println("Date:", req.Date)
-	log.Println("Budget:", req.Budget)
-	log.Println("Duration:", req.Duration)
-	log.Println("Location:", req.Location)
+	log.Println("Mood:", mood)
+	log.Println("Location:", locationName)
 
-	categories := getCategoriesByMood(req.Mood)
+	categories := getCategoriesByMood(mood)
 
 	places, err := client.GetPlaces(
-		req.Location,
+		locationName,
 		categories,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*locationpb.Location
+	var result []model.Location
 
 	for _, place := range places {
 
@@ -57,7 +51,7 @@ func (s *LocationService) FindSuitableLocations(
 			City:    place.City,
 			Lat:     place.Lat,
 			Lon:     place.Lon,
-			Mood:    req.Mood,
+			Mood:    mood,
 		}
 
 		err := s.repo.SaveIfNotExists(location)
@@ -65,44 +59,20 @@ func (s *LocationService) FindSuitableLocations(
 			log.Println("failed to save location:", err)
 		}
 
-		result = append(result, &locationpb.Location{
-			PlaceId: place.PlaceID,
-			Name:    place.Name,
-			Type:    place.Type,
-			Lat:     place.Lat,
-			Lon:     place.Lon,
-			Mood:    req.Mood,
-			City:    place.City,
-		})
+		result = append(result, location)
 	}
 
-	return &locationpb.FindLocationsResponse{
-		Locations: result,
-	}, nil
+	return result, nil
 }
 
 func (s *LocationService) GetLocationDetails(
-	ctx context.Context,
-	req *locationpb.GetLocationDetailsRequest,
-) (*locationpb.LocationDetailsResponse, error) {
+	placeID string,
+) (*client.PlaceDetails, error) {
 
 	log.Println("GetLocationDetails request:")
-	log.Println("PlaceID:", req.PlaceId)
+	log.Println("PlaceID:", placeID)
 
-	details, err := client.GetPlaceDetails(req.PlaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &locationpb.LocationDetailsResponse{
-		PlaceId:      details.PlaceID,
-		Name:         details.Name,
-		Address:      details.Address,
-		Website:      details.Website,
-		Phone:        details.Phone,
-		OpeningHours: details.OpeningHours,
-		Description:  details.Description,
-	}, nil
+	return client.GetPlaceDetails(placeID)
 }
 
 func getCategoriesByMood(mood string) string {
