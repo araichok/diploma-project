@@ -1,6 +1,7 @@
 package main
 
 import (
+	"location-service/internal/handler"
 	"log"
 	"net"
 
@@ -35,8 +36,9 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	locationService := service.NewLocationService(locationRepo)
-	locationpb.RegisterLocationServiceServer(grpcServer, locationService)
+	locationHandler := handler.NewLocationGrpcHandler(locationService)
 
+	locationpb.RegisterLocationServiceServer(grpcServer, locationHandler)
 	log.Println("Location service started on port :50054")
 
 	if err := grpcServer.Serve(lis); err != nil {
