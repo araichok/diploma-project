@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 
 	"admin-service/internal/database"
 	"admin-service/internal/handler"
 	"admin-service/internal/repository"
 	"admin-service/internal/service"
+	pb "admin-service/proto"
+
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -29,14 +32,18 @@ func main() {
 
 	repo := repository.NewAdminRepository(db)
 	svc := service.NewAdminService(repo)
-	h := handler.NewAdminHandler(svc)
+	grpcHandler := handler.NewAdminGrpcServer(svc)
 
-	http.HandleFunc("/admin/add", h.AddAdmin)
-	http.HandleFunc("/admin/list", h.GetAllAdmins)
-	http.HandleFunc("/admin/check", h.CheckAdmin)
-	http.HandleFunc("/admin/remove", h.RemoveAdmin)
-	http.HandleFunc("/admin/stats", h.GetStats)
+	lis, err := net.Listen("tcp", ":50058")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
 
-	fmt.Println("Admin Service running on port 50058")
-	log.Fatal(http.ListenAndServe(":50058", nil))
+	s := grpc.NewServer()
+	pb.RegisterAdminServiceServer(s, grpcHandler)
+
+	fmt.Println("Admin gRPC Service running on port 50058")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
