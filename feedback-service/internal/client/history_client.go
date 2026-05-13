@@ -16,7 +16,7 @@ type HistoryClient struct {
 }
 
 func NewHistoryClient() *HistoryClient {
-	conn, err := grpc.Dial("localhost:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial("localhost:50056", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("could not connect to route-history-service: %v", err)
 	}

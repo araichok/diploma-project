@@ -6,7 +6,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "50052:50052"
+      - "50056:50056"
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
