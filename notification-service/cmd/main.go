@@ -45,6 +45,6 @@ func main() {
 	http.HandleFunc("/notifications/read-all", h.MarkAllAsRead)
 	http.HandleFunc("/notifications/unread-count", h.GetUnreadCount)
 
-	fmt.Println("Notification Service running on port 8083")
-	log.Fatal(http.ListenAndServe(":8083", nil))
+	fmt.Println("Notification Service running on port 50057")
+	log.Fatal(http.ListenAndServe(":50057", nil))
 }
