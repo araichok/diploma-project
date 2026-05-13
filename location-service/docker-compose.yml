@@ -3,18 +3,17 @@ services:
   location-postgres:
     image: postgres:16
     container_name: location-postgres
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: location_db
-
     ports:
       - "5434:5432"
-
     volumes:
       - location_postgres_data:/var/lib/postgresql/data
       - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - diploma-network
 
   location-service:
     build: .
@@ -29,6 +28,12 @@ services:
       DB_HOST: location-postgres
       DB_PORT: 5432
     restart: always
+    networks:
+      - diploma-network
 
 volumes:
   location_postgres_data:
+
+networks:
+  diploma-network:
+    external: true
