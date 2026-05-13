@@ -45,6 +45,23 @@ func (s *PreferenceService) CreatePreference(p *model.Preference) (*model.Prefer
 
 	_ = s.preferenceCache.DeleteHistory(p.UserID)
 
+	event := messaging.PreferenceCreatedEvent{
+		PreferenceID: created.ID,
+		UserID:       created.UserID,
+		Mood:         created.Mood,
+		Date:         created.TravelDate,
+		Budget:       float64(created.Budget),
+		Duration:     created.Duration,
+		Location:     created.Location,
+	}
+
+	err = s.userClient.PublishPreferenceCreated(event)
+	if err != nil {
+		log.Println("[Preference Service] Failed to publish preference.created:", err)
+	} else {
+		log.Println("[Preference Service] preference.created published")
+	}
+
 	return created, nil
 }
 
@@ -76,7 +93,7 @@ func (s *PreferenceService) UpdatePreference(p *model.Preference) (*model.Prefer
 	return updated, nil
 }
 
-func (s *PreferenceService) DeletePreference(id int64, userID string) error {
+func (s *PreferenceService) DeletePreference(id string, userID string) error {
 	err := s.repo.Delete(id, userID)
 	if err != nil {
 		return err
