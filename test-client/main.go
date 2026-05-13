@@ -19,6 +19,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// ─── ROUTE HISTORY SERVICE ───
 	routeConn, err := grpc.Dial("localhost:50056", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("could not connect to route-history-service: %v", err)
@@ -61,4 +62,24 @@ func main() {
 	fmt.Println("Feedback ID:", feedbackRes.Feedback.FeedbackId)
 	fmt.Println("Rating:", feedbackRes.Feedback.Rating)
 	fmt.Println("Comment:", feedbackRes.Feedback.Comment)
+	fmt.Println()
+
+	notifConn, err := grpc.Dial("localhost:50057", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("could not connect to notification-service: %v", err)
+	}
+	defer notifConn.Close()
+	notifClient := notificationpb.NewNotificationServiceClient(notifConn)
+
+	notifs, err := notifClient.GetUserNotifications(ctx, &notificationpb.GetUserNotificationsRequest{
+		UserId: "user-001",
+	})
+	if err != nil {
+		log.Fatalf("GetUserNotifications failed: %v", err)
+	}
+	fmt.Println("✅ Notifications retrieved successfully")
+	fmt.Println("Total notifications:", len(notifs.Notifications))
+	for _, n := range notifs.Notifications {
+		fmt.Printf("  - %s: %s (read: %v)\n", n.Type, n.Message, n.IsRead)
+	}
 	fmt.Println()
