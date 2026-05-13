@@ -3,12 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"notification-service/internal/database"
 	"notification-service/internal/handler"
 	"notification-service/internal/repository"
 	"notification-service/internal/service"
+	pb "notification-service/proto"
+
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -31,8 +35,9 @@ func main() {
 
 	repo := repository.NewNotificationRepository(db)
 	svc := service.NewNotificationService(repo)
-	h := handler.NewNotificationHandler(svc)
 
+	// HTTP server
+	h := handler.NewNotificationHandler(svc)
 	http.HandleFunc("/notifications", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			h.SendNotification(w, r)
@@ -40,11 +45,29 @@ func main() {
 			h.GetUserNotifications(w, r)
 		}
 	})
-
 	http.HandleFunc("/notifications/read", h.MarkAsRead)
 	http.HandleFunc("/notifications/read-all", h.MarkAllAsRead)
 	http.HandleFunc("/notifications/unread-count", h.GetUnreadCount)
 
-	fmt.Println("Notification Service running on port 8083")
+	// gRPC server
+	grpcServer := handler.NewNotificationGrpcServer(svc)
+	lis, err := net.Listen("tcp", ":50057")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterNotificationServiceServer(s, grpcServer)
+
+	// Start gRPC in background
+	go func() {
+		fmt.Println("Notification gRPC Service running on port 50057")
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("failed to serve gRPC: %v", err)
+		}
+	}()
+
+	// Start HTTP
+	fmt.Println("Notification HTTP Service running on port 8083")
 	log.Fatal(http.ListenAndServe(":8083", nil))
 }

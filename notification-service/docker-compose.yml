@@ -1,26 +1,28 @@
 services:
   notification-service:
     build: .
-    ports:
-      - "8083:8083"
+    container_name: notification_service
+    restart: always
     depends_on:
       - postgres
+    ports:
+      - "50057:50057"
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=12345
       - DB_NAME=notification_db
 
   postgres:
-    image: postgres:15
+    image: postgres:16
     container_name: notification_postgres
     restart: always
     ports:
       - "5435:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=notification_db
     volumes:
       - notification_postgres_data:/var/lib/postgresql/data

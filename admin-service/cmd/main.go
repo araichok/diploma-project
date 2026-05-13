@@ -37,6 +37,6 @@ func main() {
 	http.HandleFunc("/admin/remove", h.RemoveAdmin)
 	http.HandleFunc("/admin/stats", h.GetStats)
 
-	fmt.Println("Admin Service running on port 8084")
-	log.Fatal(http.ListenAndServe(":8084", nil))
+	fmt.Println("Admin Service running on port 50058")
+	log.Fatal(http.ListenAndServe(":50058", nil))
 }

@@ -19,7 +19,7 @@ func main() {
 	repo := repository.NewFeedbackRepository(storage.DB)
 	feedbackService := service.NewFeedbackService(repo)
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":50055")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -27,7 +27,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterFeedbackServiceServer(grpcServer, feedbackService)
 
-	fmt.Println("gRPC Feedback Service running on port 50051")
+	fmt.Println("gRPC Feedback Service running on port 50055")
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
