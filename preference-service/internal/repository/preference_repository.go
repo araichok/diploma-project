@@ -110,7 +110,7 @@ func (r *PreferenceRepository) Update(p *model.Preference) (*model.Preference, e
 	return p, nil
 }
 
-func (r *PreferenceRepository) Delete(id int64, userID string) error {
+func (r *PreferenceRepository) Delete(id string, userID string) error {
 	query := `
 		DELETE FROM preferences
 		WHERE id = $1 AND user_id = $2

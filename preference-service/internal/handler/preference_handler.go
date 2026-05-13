@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"preference-service/internal/model"
 	"preference-service/internal/service"
 	pb "preference-service/proto/preferencepb"
@@ -26,11 +27,14 @@ func modelToProto(p *model.Preference) *pb.Preference {
 		Location:   p.Location,
 		TravelDate: p.TravelDate,
 		CreatedAt:  p.CreatedAt.String(),
-		UpdatedAt:  p.UpdatedAt.String(),
 	}
 }
 
-func (h *PreferenceHandler) CreatePreference(ctx context.Context, req *pb.CreatePreferenceRequest) (*pb.PreferenceResponse, error) {
+func (h *PreferenceHandler) CreatePreference(
+	ctx context.Context,
+	req *pb.CreatePreferenceRequest,
+) (*pb.PreferenceResponse, error) {
+
 	p := &model.Preference{
 		UserID:     req.UserId,
 		Mood:       req.Mood,
@@ -50,7 +54,11 @@ func (h *PreferenceHandler) CreatePreference(ctx context.Context, req *pb.Create
 	}, nil
 }
 
-func (h *PreferenceHandler) GetPreferenceHistory(ctx context.Context, req *pb.UserPreferenceRequest) (*pb.PreferenceHistoryResponse, error) {
+func (h *PreferenceHandler) GetPreferenceHistory(
+	ctx context.Context,
+	req *pb.GetPreferenceHistoryRequest,
+) (*pb.PreferenceHistoryResponse, error) {
+
 	preferences, err := h.service.GetPreferenceHistory(req.UserId)
 	if err != nil {
 		return nil, err
@@ -67,7 +75,11 @@ func (h *PreferenceHandler) GetPreferenceHistory(ctx context.Context, req *pb.Us
 	}, nil
 }
 
-func (h *PreferenceHandler) UpdatePreference(ctx context.Context, req *pb.UpdatePreferenceRequest) (*pb.PreferenceResponse, error) {
+func (h *PreferenceHandler) UpdatePreference(
+	ctx context.Context,
+	req *pb.UpdatePreferenceRequest,
+) (*pb.PreferenceResponse, error) {
+
 	p := &model.Preference{
 		ID:         req.Id,
 		UserID:     req.UserId,
@@ -88,7 +100,11 @@ func (h *PreferenceHandler) UpdatePreference(ctx context.Context, req *pb.Update
 	}, nil
 }
 
-func (h *PreferenceHandler) DeletePreference(ctx context.Context, req *pb.DeletePreferenceRequest) (*pb.DeletePreferenceResponse, error) {
+func (h *PreferenceHandler) DeletePreference(
+	ctx context.Context,
+	req *pb.DeletePreferenceRequest,
+) (*pb.DeletePreferenceResponse, error) {
+
 	err := h.service.DeletePreference(req.Id, req.UserId)
 	if err != nil {
 		return nil, err
