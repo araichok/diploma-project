@@ -5,23 +5,28 @@ package preference;
 option go_package = "./proto/preferencepb";
 
 service PreferenceService {
-  rpc CreatePreference(CreatePreferenceRequest) returns (PreferenceResponse);
-  rpc GetPreferenceHistory(UserPreferenceRequest) returns (PreferenceHistoryResponse);
-  rpc UpdatePreference(UpdatePreferenceRequest) returns (PreferenceResponse);
-  rpc DeletePreference(DeletePreferenceRequest) returns (DeletePreferenceResponse);
+  rpc CreatePreference(CreatePreferenceRequest)
+      returns (PreferenceResponse);
 
+  rpc GetPreferenceHistory(GetPreferenceHistoryRequest)
+      returns (PreferenceHistoryResponse);
+
+  rpc UpdatePreference(UpdatePreferenceRequest)
+      returns (PreferenceResponse);
+
+  rpc DeletePreference(DeletePreferenceRequest)
+      returns (DeletePreferenceResponse);
 }
 
 message Preference {
-  int64 id = 1;
+  string id = 1;
   string user_id = 2;
   string mood = 3;
   int32 budget = 4;
   int32 duration = 5;
   string location = 6;
   string travel_date = 7;
-  string created_at = 9;
-  string updated_at = 10;
+  string created_at = 8;
 }
 
 message CreatePreferenceRequest {
@@ -34,7 +39,7 @@ message CreatePreferenceRequest {
 }
 
 message UpdatePreferenceRequest {
-  int64 id = 1;
+  string id = 1;
   string user_id = 2;
   string mood = 3;
   int32 budget = 4;
@@ -43,13 +48,13 @@ message UpdatePreferenceRequest {
   string travel_date = 7;
 }
 
-message DeletePreferenceRequest {
-  int64 id = 1;
-  string user_id = 2;
+message GetPreferenceHistoryRequest {
+  string user_id = 1;
 }
 
-message UserPreferenceRequest {
-  string user_id = 1;
+message DeletePreferenceRequest {
+  string id = 1;
+  string user_id = 2;
 }
 
 message PreferenceResponse {
