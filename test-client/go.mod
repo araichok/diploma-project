@@ -6,10 +6,12 @@ replace feedback-service => ../feedback-service
 
 replace route-history-service => ../route-history-service
 
+replace admin-service => ../admin-service
 require (
 	feedback-service v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.81.0
 	route-history-service v0.0.0-00010101000000-000000000000
+	admin-service v0.0.0-00010101000000-000000000000
 )
 
 require (
