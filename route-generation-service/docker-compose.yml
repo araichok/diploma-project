@@ -1,0 +1,41 @@
+services:
+  route-generation-service:
+    build: .
+    container_name: route-generation-service
+    restart: on-failure
+    ports:
+      - "50056:50056"
+    depends_on:
+      - route-postgres
+      - nats
+    env_file:
+      - .env
+    networks:
+      - diploma-network
+
+  route-postgres:
+    image: postgres:15
+    container_name: route-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: route_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - diploma-network
+
+  nats:
+    image: nats:latest
+    container_name: route-nats
+    ports:
+      - "4222:4222"
+    networks:
+      - diploma-network
+
+networks:
+  diploma-network:
+    external: true

@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package location;
+
+option go_package = "./proto/locationpb";
+
+service LocationService {
+  rpc FindSuitableLocations(FindLocationsRequest) returns (FindLocationsResponse);
+  rpc GetLocationDetails(GetLocationDetailsRequest) returns (LocationDetailsResponse);
+}
+
+message FindLocationsRequest {
+  string mood = 1;
+  string date = 2;
+  double budget = 3;
+  int32 duration = 4;
+  string location = 5;
+}
+
+message Location {
+  string place_id = 1;
+  string name = 2;
+  string type = 3;
+  double lat = 4;
+  double lon = 5;
+  string mood = 6;
+  string city = 7;
+}
+
+message FindLocationsResponse {
+  repeated Location locations = 1;
+}
+
+message GetLocationDetailsRequest {
+  string place_id = 1;
+}
+
+message LocationDetailsResponse {
+  string place_id = 1;
+  string name = 2;
+  string address = 3;
+  string website = 4;
+  string phone = 5;
+  string opening_hours = 6;
+  string description = 7;
+}
