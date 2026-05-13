@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package admin;
+
+option go_package = "admin-service/proto;admin";
+
+service AdminService {
+  rpc AddAdmin(AddAdminRequest) returns (AdminResponse);
+  rpc GetAllAdmins(GetAllAdminsRequest) returns (AdminListResponse);
+  rpc IsAdmin(IsAdminRequest) returns (IsAdminResponse);
+  rpc RemoveAdmin(RemoveAdminRequest) returns (RemoveAdminResponse);
+  rpc GetStats(GetStatsRequest) returns (StatsResponse);
+}
+
+message AddAdminRequest {
+  string user_id = 1;
+  string role = 2;
+}
+
+message GetAllAdminsRequest {}
+
+message IsAdminRequest {
+  string user_id = 1;
+}
+
+message RemoveAdminRequest {
+  string id = 1;
+}
+
+message GetStatsRequest {}
+
+message Admin {
+  string id = 1;
+  string user_id = 2;
+  string role = 3;
+  string created_at = 4;
+}
+
+message AdminResponse {
+  Admin admin = 1;
+}
+
+message AdminListResponse {
+  repeated Admin admins = 1;
+}
+
+message IsAdminResponse {
+  bool is_admin = 1;
+}
+
+message RemoveAdminResponse {
+  string message = 1;
+}
+
+message StatsResponse {
+  int32 total_users = 1;
+  int32 total_routes = 2;
+  int32 total_feedbacks = 3;
+  int32 total_notifications = 4;
+}
