@@ -35,9 +35,10 @@ func main() {
 
 	repo := repository.NewNotificationRepository(db)
 	svc := service.NewNotificationService(repo)
-
-	// HTTP server
 	h := handler.NewNotificationHandler(svc)
+	grpcHandler := handler.NewNotificationGrpcServer(svc)
+
+	// HTTP server routes
 	http.HandleFunc("/notifications", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			h.SendNotification(w, r)
@@ -50,14 +51,13 @@ func main() {
 	http.HandleFunc("/notifications/unread-count", h.GetUnreadCount)
 
 	// gRPC server
-	grpcServer := handler.NewNotificationGrpcServer(svc)
 	lis, err := net.Listen("tcp", ":50057")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterNotificationServiceServer(s, grpcServer)
+	pb.RegisterNotificationServiceServer(s, grpcHandler)
 
 	// Start gRPC in background
 	go func() {
