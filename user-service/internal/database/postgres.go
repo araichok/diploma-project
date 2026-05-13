@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"user-service/internal/config"
 
@@ -21,12 +22,19 @@ func ConnectDB(cfg *config.Config) (*pgx.Conn, error) {
 		cfg.DBSSLMode,
 	)
 
-	conn, err := pgx.Connect(context.Background(), connString)
-	if err != nil {
-		return nil, err
+	var conn *pgx.Conn
+	var err error
+
+	for i := 0; i < 10; i++ {
+		conn, err = pgx.Connect(context.Background(), connString)
+		if err == nil {
+			log.Println("Connected to PostgreSQL")
+			return conn, nil
+		}
+
+		log.Println("Waiting for PostgreSQL...")
+		time.Sleep(3 * time.Second)
 	}
 
-	log.Println("Connected to PostgreSQL")
-
-	return conn, nil
+	return nil, err
 }
