@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package route;
+
+option go_package = "./proto/routepb";
+
+service RouteService {
+  rpc GetRouteByID(GetRouteByIDRequest) returns (RouteResponse);
+  rpc GetUserRoutes(GetUserRoutesRequest) returns (GetUserRoutesResponse);
+}
+
+message GetRouteByIDRequest {
+  string route_id = 1;
+}
+
+message GetUserRoutesRequest {
+  string user_id = 1;
+}
+
+message GetUserRoutesResponse {
+  repeated Route routes = 1;
+}
+
+message RouteResponse {
+  Route route = 1;
+}
+
+message Route {
+  string id = 1;
+  string user_id = 2;
+  string preference_id = 3;
+  string title = 4;
+  string mood = 5;
+  string city = 6;
+  int32 total_budget = 7;
+  int32 total_duration = 8;
+  string created_at = 9;
+  repeated RoutePlace places = 10;
+}
+
+message RoutePlace {
+  string id = 1;
+  string route_id = 2;
+  string place_id = 3;
+  string name = 4;
+  string type = 5;
+  string address = 6;
+  double lat = 7;
+  double lon = 8;
+  int32 visit_order = 9;
+  int32 estimated_time = 10;
+  int32 estimated_cost = 11;
+}
