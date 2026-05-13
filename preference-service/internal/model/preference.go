@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Preference struct {
-	ID         int64
+	ID         string
 	UserID     string
 	Mood       string
 	Budget     int32
