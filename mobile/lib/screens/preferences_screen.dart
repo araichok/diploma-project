@@ -3,9 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/mood_provider.dart';
-import '../providers/route_provider.dart';
 import '../widgets/custom_logo.dart';
-import '../models/mood.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
@@ -15,25 +13,22 @@ class PreferencesScreen extends StatefulWidget {
 }
 
 class _PreferencesScreenState extends State<PreferencesScreen> {
-  final TextEditingController _locationController = TextEditingController();
-  final List<String> durations = const [
-    'Half Day (4 hours)',
-    'Full Day (8 hours)',
-    'Weekend (2 days)',
-    'Week (7 days)',
-  ];
+  final List<String> cities = ['Астана', 'Алматы'];
   
-  final List<String> weatherPreferences = const [
-    'Any Weather',
-    'Sunny',
-    'Cloudy',
-    'Indoor Activities',
-  ];
+  List<String> get hoursList {
+    return [
+      '1 час',
+      '2 часа',
+      '3 часа',
+      '4 часа',
+      '5 часа',
+      '6 часа',
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final moodProvider = Provider.of<MoodProvider>(context);
-    final routeProvider = Provider.of<RouteProvider>(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -48,14 +43,13 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mood display
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    moodProvider.selectedMood?.color ?? Colors.blue,
-                    (moodProvider.selectedMood?.color ?? Colors.blue).withOpacity(0.7),
+                    moodProvider.selectedCategory?.color ?? Colors.blue,
+                    (moodProvider.selectedCategory?.color ?? Colors.blue).withOpacity(0.7),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(15),
@@ -63,7 +57,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               child: Row(
                 children: [
                   Icon(
-                    moodProvider.selectedMood?.icon ?? Icons.emoji_emotions,
+                    moodProvider.selectedCategory?.icon ?? Icons.emoji_emotions,
                     color: Colors.white,
                     size: 30,
                   ),
@@ -73,7 +67,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "You're Feeling: ${moodProvider.selectedMood?.displayName ?? ''}",
+                          "You choose: ${moodProvider.selectedCategory?.displayName ?? ''}",
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -81,7 +75,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           ),
                         ),
                         Text(
-                          "We'll find the best experiences for you",
+                          "We'll create the perfect route for you",
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.9),
                             fontSize: 14,
@@ -96,79 +90,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             
             const SizedBox(height: 30),
             
-            // Location
             const Text(
-              'Location / City',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                hintText: 'e.g., Paris, Tokyo, New York',
-                prefixIcon: const Icon(Icons.location_on, color: Colors.blue),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              onChanged: (value) => routeProvider.setLocation(value),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Date
-            const Text(
-              'Date',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            InkWell(
-              onTap: () async {
-                DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate: routeProvider.selectedDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (picked != null) {
-                  routeProvider.setSelectedDate(picked);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.white,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today, color: Colors.blue),
-                    const SizedBox(width: 10),
-                    Text(
-                      DateFormat('dd.MM.yyyy').format(routeProvider.selectedDate),
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Duration
-            const Text(
-              'Trip Duration',
+              'Location',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -184,18 +107,100 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
-                  value: routeProvider.duration,
+                  value: moodProvider.selectedCity.isEmpty ? null : moodProvider.selectedCity,
+                  hint: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text('Select a city'),
+                  ),
                   isExpanded: true,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  items: durations.map((String duration) {
+                  items: cities.map((String city) {
                     return DropdownMenuItem<String>(
-                      value: duration,
-                      child: Text(duration),
+                      value: city,
+                      child: Text(city),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    moodProvider.setCity(newValue!);
+                  },
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            const Text(
+              'Date',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () async {
+                DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: moodProvider.selectedDate,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (picked != null) {
+                  moodProvider.setDate(picked);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today, color: Colors.blue),
+                    const SizedBox(width: 10),
+                    Text(
+                      DateFormat('dd.MM.yyyy').format(moodProvider.selectedDate),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            const Text(
+              'Duration (hours)',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: moodProvider.duration,
+                  isExpanded: true,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  items: hoursList.map((String hours) {
+                    return DropdownMenuItem<String>(
+                      value: hours,
+                      child: Text(hours),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
-                      routeProvider.setDuration(newValue);
+                      moodProvider.setDuration(newValue);
                     }
                   },
                 ),
@@ -204,42 +209,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             
             const SizedBox(height: 20),
             
-            // Weather Preference
-            const Text(
-              'Weather Preference',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: weatherPreferences.map((pref) {
-                bool isSelected = routeProvider.weatherPreference == pref;
-                return ChoiceChip(
-                  label: Text(pref),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      routeProvider.setWeatherPreference(pref);
-                    }
-                  },
-                  selectedColor: moodProvider.selectedMood?.color.withOpacity(0.2),
-                  labelStyle: TextStyle(
-                    color: isSelected ? moodProvider.selectedMood?.color : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                );
-              }).toList(),
-            ),
-            
-            const SizedBox(height: 20),
-            
-            // Budget
             Text(
-              'Budget: \$${routeProvider.budget.round()}',
+              'Budget: \$${moodProvider.budget.round()}',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -252,13 +223,13 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 const Text('\$50', style: TextStyle(color: Colors.grey)),
                 Expanded(
                   child: Slider(
-                    value: routeProvider.budget,
+                    value: moodProvider.budget,
                     min: 50,
                     max: 5000,
                     divisions: 99,
-                    activeColor: moodProvider.selectedMood?.color,
+                    activeColor: moodProvider.selectedCategory?.color,
                     onChanged: (value) {
-                      routeProvider.setBudget(value);
+                      moodProvider.setBudget(value);
                     },
                   ),
                 ),
@@ -268,7 +239,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             
             const SizedBox(height: 30),
             
-            // Action buttons
             Row(
               children: [
                 Expanded(
@@ -291,29 +261,34 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      if (_locationController.text.isNotEmpty) {
-                        routeProvider.generateRoutes(
-                          moodProvider.selectedMood ?? Mood.adventurous
-                        );
-                        Navigator.pushNamed(context, '/routes');
-                      } else {
+                      if (moodProvider.selectedCity.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Please enter a location'),
+                            content: Text('Please select a city'),
                             backgroundColor: Colors.red,
                           ),
                         );
+                      } else if (moodProvider.selectedCategory == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please select a travel style'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
+                        // Переход на карту
+                        Navigator.pushNamed(context, '/map');
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: moodProvider.selectedMood?.color ?? Colors.blue,
+                      backgroundColor: moodProvider.selectedCategory?.color ?? Colors.blue,
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: const Text(
-                      'Generate Routes',
+                      'Show Map',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -327,11 +302,5 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _locationController.dispose();
-    super.dispose();
   }
 }

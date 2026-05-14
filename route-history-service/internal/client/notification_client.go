@@ -16,7 +16,12 @@ type NotificationClient struct {
 }
 
 func NewNotificationClient() *NotificationClient {
-	conn, err := grpc.Dial("localhost:50057", grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	conn, err := grpc.Dial(
+		"notification-service:50057",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
 	if err != nil {
 		log.Fatalf("could not connect to notification-service: %v", err)
 	}

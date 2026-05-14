@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package routehistory;
 
-option go_package = "route-history-service/proto;routehistory";
-
+option go_package = "./proto;routehistory";
 service RouteHistoryService {
   rpc CreateHistory(CreateHistoryRequest) returns (HistoryResponse);
   rpc GetUserHistory(GetUserHistoryRequest) returns (HistoryListResponse);
   rpc GetHistoryById(GetHistoryByIdRequest) returns (HistoryResponse);
   rpc UpdateHistoryStatus(UpdateHistoryStatusRequest) returns (HistoryResponse);
+
+  rpc CheckRouteCompleted(CheckRouteCompletedRequest) returns (CheckRouteCompletedResponse);
 }
 
 message CreateHistoryRequest {
@@ -28,6 +29,15 @@ message GetHistoryByIdRequest {
 
 message UpdateHistoryStatusRequest {
   string route_id = 1;
+  string status = 2;
+}
+
+message CheckRouteCompletedRequest {
+  string route_id = 1;
+}
+
+message CheckRouteCompletedResponse {
+  bool is_completed = 1;
   string status = 2;
 }
 

@@ -1,19 +1,37 @@
 package service
 
 import (
+	"admin-service/internal/client"
 	"admin-service/internal/model"
 	"admin-service/internal/repository"
+	"fmt"
 )
 
 type AdminService struct {
-	repo *repository.AdminRepository
+	repo       *repository.AdminRepository
+	userClient *client.UserClient
 }
 
 func NewAdminService(repo *repository.AdminRepository) *AdminService {
-	return &AdminService{repo: repo}
+	return &AdminService{
+		repo:       repo,
+		userClient: client.NewUserClient(),
+	}
 }
 
 func (s *AdminService) AddAdmin(userID, role string) (*model.Admin, error) {
+	// Verify user exists in user-service
+	user, err := s.userClient.GetUserProfile(userID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %v", err)
+	}
+	if user != nil {
+		role = user.Role
+		if role == "" {
+			role = "admin"
+		}
+	}
+
 	return s.repo.CreateAdmin(userID, role)
 }
 

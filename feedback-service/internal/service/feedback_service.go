@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"feedback-service/internal/client"
 	"feedback-service/internal/repository"
@@ -14,6 +15,7 @@ type FeedbackService struct {
 	pb.UnimplementedFeedbackServiceServer
 	repo               *repository.FeedbackRepository
 	notificationClient *client.NotificationClient
+	historyClient      *client.HistoryClient
 }
 
 // NewFeedbackService creates a new FeedbackService
@@ -21,6 +23,7 @@ func NewFeedbackService(repo *repository.FeedbackRepository) *FeedbackService {
 	return &FeedbackService{
 		repo:               repo,
 		notificationClient: client.NewNotificationClient(),
+		historyClient:      client.NewHistoryClient(),
 	}
 }
 
@@ -34,7 +37,16 @@ func (s *FeedbackService) CreateFeedback(ctx context.Context, req *pb.CreateFeed
 		Comment:    req.Comment,
 	}
 
-	err := s.repo.Create(feedback)
+	completed, err := s.historyClient.CheckRouteCompleted(req.RouteId)
+	if err != nil {
+		return nil, err
+	}
+
+	if !completed {
+		return nil, fmt.Errorf("feedback can only be added for completed routes")
+	}
+
+	err = s.repo.Create(feedback)
 	if err != nil {
 		return nil, err
 	}
