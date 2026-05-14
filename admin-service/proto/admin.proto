@@ -2,8 +2,7 @@ syntax = "proto3";
 
 package admin;
 
-option go_package = "admin-service/proto;admin";
-
+option go_package = "./proto;admin";
 service AdminService {
   rpc AddAdmin(AddAdminRequest) returns (AdminResponse);
   rpc GetAllAdmins(GetAllAdminsRequest) returns (AdminListResponse);
