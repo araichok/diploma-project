@@ -88,7 +88,7 @@ func getPlacesByCoordinates(lat float64, lon float64, categories string) ([]Plac
 		return nil, fmt.Errorf("GEOAPIFY_API_KEY is empty")
 	}
 
-	filter := fmt.Sprintf("circle:%f,%f,5000", lon, lat)
+	filter := fmt.Sprintf("circle:%f,%f,15000", lon, lat)
 
 	requestURL := fmt.Sprintf(
 		"https://api.geoapify.com/v2/places?categories=%s&filter=%s&limit=20&apiKey=%s",

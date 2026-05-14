@@ -80,16 +80,16 @@ func getCategoriesByMood(mood string) string {
 	switch mood {
 
 	case "calm":
-		return "leisure.park,entertainment.museum,education.library,catering.cafe"
+		return "leisure.park,tourism.sights,heritage,entertainment.museum,education.library,natural,catering.cafe"
 
 	case "happy":
-		return "catering.cafe,catering.restaurant,entertainment,tourism.sights"
+		return "catering.cafe,catering.restaurant,entertainment.cinema,tourism.sights,leisure.park"
 
 	case "romantic":
-		return "catering.restaurant,leisure.park,tourism.sights,entertainment.cinema"
+		return "catering.restaurant,catering.cafe,leisure.park,tourism.sights,entertainment.cinema"
 
 	case "active":
-		return "sport,leisure,tourism.sights,natural"
+		return "sport,leisure.park,natural,tourism.sights,entertainment"
 
 	case "cultural":
 		return "entertainment.museum,tourism.sights,heritage,education.library"
@@ -98,9 +98,9 @@ func getCategoriesByMood(mood string) string {
 		return "catering.restaurant,catering.cafe,catering.fast_food"
 
 	case "shopping":
-		return "commercial.shopping_mall,commercial.marketplace"
+		return "commercial.shopping_mall,commercial.marketplace,catering.cafe,entertainment.cinema"
 
 	default:
-		return "tourism.sights,catering.cafe,leisure.park"
+		return "tourism.sights,leisure.park,catering.cafe,entertainment"
 	}
 }
