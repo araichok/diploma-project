@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package preference;
+
+option go_package = "./proto/preferencepb";
+
+service PreferenceService {
+  rpc CreatePreference(CreatePreferenceRequest)
+      returns (PreferenceResponse);
+
+  rpc GetPreferenceHistory(GetPreferenceHistoryRequest)
+      returns (PreferenceHistoryResponse);
+
+  rpc UpdatePreference(UpdatePreferenceRequest)
+      returns (PreferenceResponse);
+
+  rpc DeletePreference(DeletePreferenceRequest)
+      returns (DeletePreferenceResponse);
+}
+
+message Preference {
+  string id = 1;
+  string user_id = 2;
+  string mood = 3;
+  int32 budget = 4;
+  int32 duration = 5;
+  string location = 6;
+  string travel_date = 7;
+  string created_at = 8;
+}
+
+message CreatePreferenceRequest {
+  string user_id = 1;
+  string mood = 2;
+  int32 budget = 3;
+  int32 duration = 4;
+  string location = 5;
+  string travel_date = 6;
+}
+
+message UpdatePreferenceRequest {
+  string id = 1;
+  string user_id = 2;
+  string mood = 3;
+  int32 budget = 4;
+  int32 duration = 5;
+  string location = 6;
+  string travel_date = 7;
+}
+
+message GetPreferenceHistoryRequest {
+  string user_id = 1;
+}
+
+message DeletePreferenceRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message PreferenceResponse {
+  Preference preference = 1;
+}
+
+message PreferenceHistoryResponse {
+  repeated Preference preferences = 1;
+}
+
+message DeletePreferenceResponse {
+  string message = 1;
+}
