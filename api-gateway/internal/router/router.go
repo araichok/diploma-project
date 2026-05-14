@@ -60,5 +60,16 @@ func SetupRouter(
 		historyHandler.GetUserHistory,
 	)
 
+	// feedback
+	protected.POST(
+		"/feedback",
+		feedbackHandler.CreateFeedback,
+	)
+
+	protected.GET(
+		"/feedback/route/:route_id",
+		feedbackHandler.GetFeedbackByRoute,
+	)
+
 	return r
 }
