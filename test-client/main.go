@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	adminpb "admin-service/proto"
 	feedbackpb "feedback-service/proto"
 	notificationpb "notification-service/proto"
 	routepb "route-history-service/proto"
@@ -123,4 +124,36 @@ func main() {
 	for _, n := range notifs.Notifications {
 		fmt.Printf("- [%s] %s\n", n.Type, n.Message)
 	}
+
+	fmt.Println()
+	fmt.Println("STEP 6: Admin service test")
+
+	adminConn, err := grpc.Dial("localhost:50058", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("could not connect to admin-service: %v", err)
+	}
+	defer adminConn.Close()
+
+	adminClient := adminpb.NewAdminServiceClient(adminConn)
+
+	adminRes, err := adminClient.AddAdmin(ctx, &adminpb.AddAdminRequest{
+		UserId: "user-001",
+		Role:   "admin",
+	})
+	if err != nil {
+		log.Fatalf("AddAdmin failed: %v", err)
+	}
+
+	fmt.Println("Admin added successfully")
+	fmt.Println("Admin ID:", adminRes.Admin.Id)
+	fmt.Println("Role:", adminRes.Admin.Role)
+
+	isAdminRes, err := adminClient.IsAdmin(ctx, &adminpb.IsAdminRequest{
+		UserId: "user-001",
+	})
+	if err != nil {
+		log.Fatalf("IsAdmin failed: %v", err)
+	}
+
+	fmt.Println("Is admin:", isAdminRes.IsAdmin)
 }
