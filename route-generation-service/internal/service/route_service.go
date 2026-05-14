@@ -104,18 +104,36 @@ func (s *RouteService) buildRoute(
 	candidates := buildCandidates(event.Mood, locations)
 
 	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].priority == candidates[j].priority {
+			return candidates[i].estimatedCost < candidates[j].estimatedCost
+		}
 		return candidates[i].priority > candidates[j].priority
 	})
 
 	var order int32 = 1
 
+	usedPlaces := make(map[string]bool)
+	usedTypes := make(map[string]int)
+
 	for _, candidate := range candidates {
+		if route.TotalDuration >= event.Duration {
+			break
+		}
+
+		if usedPlaces[candidate.location.PlaceId] {
+			continue
+		}
 
 		if float64(route.TotalBudget+candidate.estimatedCost) > event.Budget {
 			continue
 		}
 
 		if route.TotalDuration+candidate.estimatedTime > event.Duration {
+			continue
+		}
+
+		// кафе, ресторан, fast_food, cinema только 1 раз
+		if !canAddMoreByType(candidate.placeType, usedTypes) {
 			continue
 		}
 
@@ -131,12 +149,30 @@ func (s *RouteService) buildRoute(
 			EstimatedCost: candidate.estimatedCost,
 		})
 
+		usedPlaces[candidate.location.PlaceId] = true
+		usedTypes[candidate.placeType]++
+
 		route.TotalBudget += candidate.estimatedCost
 		route.TotalDuration += candidate.estimatedTime
 		order++
 	}
 
 	return route
+}
+
+func canAddMoreByType(placeType string, usedTypes map[string]int) bool {
+	switch placeType {
+	case "cafe":
+		return usedTypes["cafe"] < 1
+	case "restaurant":
+		return usedTypes["restaurant"] < 1
+	case "fast_food":
+		return usedTypes["fast_food"] < 1
+	case "cinema":
+		return usedTypes["cinema"] < 1
+	default:
+		return true
+	}
 }
 
 func buildCandidates(
@@ -147,7 +183,7 @@ func buildCandidates(
 	var candidates []routeCandidate
 
 	for _, loc := range locations {
-		normalizedType := normalizePlaceType(loc.Type)
+		normalizedType := normalizePlaceType(loc.Type, loc.Name)
 
 		estimatedTime := getEstimatedTimeByType(normalizedType)
 		estimatedCost := getEstimatedCostByType(normalizedType)
@@ -165,10 +201,18 @@ func buildCandidates(
 	return candidates
 }
 
-func normalizePlaceType(placeType string) string {
+func normalizePlaceType(placeType string, name string) string {
 	placeType = strings.ToLower(placeType)
+	name = strings.ToLower(name)
 
 	switch {
+	case strings.Contains(name, "саябағы"):
+		return "park"
+	case strings.Contains(name, "парк"):
+		return "park"
+	case strings.Contains(name, "park"):
+		return "park"
+
 	case strings.Contains(placeType, "catering.cafe"):
 		return "cafe"
 	case strings.Contains(placeType, "catering.restaurant"):
@@ -181,25 +225,10 @@ func normalizePlaceType(placeType string) string {
 	case strings.Contains(placeType, "museum"):
 		return "museum"
 
-	case strings.Contains(placeType, "leisure.park"):
+	case strings.Contains(placeType, "leisure"):
 		return "park"
 	case strings.Contains(placeType, "park"):
 		return "park"
-
-	case strings.Contains(placeType, "entertainment.cinema"):
-		return "cinema"
-	case strings.Contains(placeType, "cinema"):
-		return "cinema"
-
-	case strings.Contains(placeType, "commercial.shopping_mall"):
-		return "shopping_mall"
-	case strings.Contains(placeType, "marketplace"):
-		return "marketplace"
-
-	case strings.Contains(placeType, "education.library"):
-		return "library"
-	case strings.Contains(placeType, "library"):
-		return "library"
 
 	case strings.Contains(placeType, "tourism.sights"):
 		return "sight"
@@ -208,20 +237,24 @@ func normalizePlaceType(placeType string) string {
 	case strings.Contains(placeType, "heritage"):
 		return "heritage"
 
-	case strings.Contains(placeType, "sport"):
-		return "sport"
+	case strings.Contains(placeType, "education.library"):
+		return "library"
+	case strings.Contains(placeType, "library"):
+		return "library"
 
-	case strings.Contains(placeType, "natural"):
-		return "nature"
-
-	case strings.Contains(placeType, "tourism"):
-		return "sight"
 	case strings.Contains(placeType, "catering"):
 		return "cafe"
+	case strings.Contains(placeType, "tourism"):
+		return "sight"
+
+	case strings.Contains(placeType, "bowling"):
+		return "bowling"
+	case strings.Contains(placeType, "cinema"):
+		return "cinema"
+	case strings.Contains(placeType, "theatre"):
+		return "theatre"
 	case strings.Contains(placeType, "entertainment"):
 		return "entertainment"
-	case strings.Contains(placeType, "commercial"):
-		return "shopping"
 
 	default:
 		return "place"
@@ -232,15 +265,21 @@ func getEstimatedTimeByType(placeType string) int32 {
 	placeType = strings.ToLower(placeType)
 
 	switch placeType {
+	case "park":
+		return 2
 	case "museum":
 		return 2
-	case "restaurant":
+	case "sight":
 		return 2
+	case "heritage":
+		return 1
+	case "library":
+		return 1
 	case "cafe":
 		return 1
+	case "restaurant":
+		return 2
 	case "fast_food":
-		return 1
-	case "park":
 		return 1
 	case "cinema":
 		return 2
@@ -248,15 +287,15 @@ func getEstimatedTimeByType(placeType string) int32 {
 		return 2
 	case "marketplace":
 		return 2
-	case "sight":
-		return 1
-	case "heritage":
-		return 1
-	case "library":
-		return 1
 	case "sport":
 		return 2
 	case "nature":
+		return 2
+	case "bowling":
+		return 2
+	case "theatre":
+		return 2
+	case "entertainment":
 		return 2
 	default:
 		return 1
@@ -293,6 +332,12 @@ func getEstimatedCostByType(placeType string) int32 {
 		return 0
 	case "nature":
 		return 0
+	case "bowling":
+		return 4000
+	case "theatre":
+		return 5000
+	case "entertainment":
+		return 3000
 	default:
 		return 1000
 	}
@@ -303,7 +348,6 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 	placeType = strings.ToLower(placeType)
 
 	switch mood {
-
 	case "calm":
 		switch placeType {
 		case "park":
@@ -313,18 +357,6 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 		case "museum":
 			return 80
 		case "cafe":
-			return 70
-		}
-
-	case "happy":
-		switch placeType {
-		case "cafe":
-			return 100
-		case "restaurant":
-			return 90
-		case "entertainment":
-			return 80
-		case "sight":
 			return 70
 		}
 
@@ -340,16 +372,32 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 			return 70
 		}
 
+	case "happy":
+		switch placeType {
+		case "bowling":
+			return 100
+		case "cinema":
+			return 90
+		case "entertainment":
+			return 80
+		case "cafe":
+			return 70
+		case "sight":
+			return 60
+		}
+
 	case "active":
 		switch placeType {
 		case "sport":
 			return 100
-		case "nature":
+		case "bowling":
 			return 90
-		case "park":
+		case "nature":
 			return 80
-		case "sight":
+		case "park":
 			return 70
+		case "sight":
+			return 60
 		}
 
 	case "cultural":
