@@ -22,6 +22,7 @@ func NewFeedbackService(repo *repository.FeedbackRepository) *FeedbackService {
 	return &FeedbackService{
 		repo:               repo,
 		notificationClient: client.NewNotificationClient(),
+		historyClient:      client.NewHistoryClient(),
 	}
 }
 
