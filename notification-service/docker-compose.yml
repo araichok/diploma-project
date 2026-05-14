@@ -2,30 +2,34 @@ services:
   notification-service:
     build: .
     container_name: notification_service
-    restart: always
-    depends_on:
-      - postgres
+    restart: on-failure
     ports:
       - "50057:50057"
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=12345
-      - DB_NAME=notification_db
+    depends_on:
+      - notification-postgres
+    env_file:
+      - .env
+    networks:
+      - diploma-network
 
-  postgres:
+  notification-postgres:
     image: postgres:16
     container_name: notification_postgres
     restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: notification_db
     ports:
       - "5435:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345
-      - POSTGRES_DB=notification_db
     volumes:
       - notification_postgres_data:/var/lib/postgresql/data
+    networks:
+      - diploma-network
+
+networks:
+  diploma-network:
+    external: true
 
 volumes:
   notification_postgres_data:

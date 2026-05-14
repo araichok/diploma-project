@@ -2,30 +2,34 @@ services:
   feedback-service:
     build: .
     container_name: feedback_service
-    restart: always
-    depends_on:
-      - postgres
+    restart: on-failure
     ports:
       - "50055:50055"
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=12345
-      - DB_NAME=feedback_db
+    depends_on:
+      - feedback-postgres
+    env_file:
+      - .env
+    networks:
+      - diploma-network
 
-  postgres:
+  feedback-postgres:
     image: postgres:16
     container_name: feedback_postgres
     restart: always
-    ports:
-      - "5433:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345
-      - POSTGRES_DB=feedback_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: feedback_db
+    ports:
+      - "5436:5432"
     volumes:
       - feedback_postgres_data:/var/lib/postgresql/data
+    networks:
+      - diploma-network
+
+networks:
+  diploma-network:
+    external: true
 
 volumes:
   feedback_postgres_data:

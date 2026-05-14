@@ -2,30 +2,34 @@ services:
   admin-service:
     build: .
     container_name: admin_service
-    restart: always
-    depends_on:
-      - postgres
+    restart: on-failure
     ports:
       - "50058:50058"
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=12345
-      - DB_NAME=admin_db
+    depends_on:
+      - admin-postgres
+    env_file:
+      - .env
+    networks:
+      - diploma-network
 
-  postgres:
+  admin-postgres:
     image: postgres:16
     container_name: admin_postgres
     restart: always
-    ports:
-      - "5436:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345
-      - POSTGRES_DB=admin_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: admin_db
+    ports:
+      - "5438:5432"
     volumes:
       - admin_postgres_data:/var/lib/postgresql/data
+    networks:
+      - diploma-network
+
+networks:
+  diploma-network:
+    external: true
 
 volumes:
   admin_postgres_data:
