@@ -21,7 +21,7 @@ func LoadConfig() *Config {
 	_ = godotenv.Load()
 
 	return &Config{
-		GRPCPort:            getEnv("GRPC_PORT", "50056"),
+		GRPCPort:            getEnv("GRPC_PORT", "50053"),
 		PostgresHost:        getEnv("POSTGRES_HOST", "localhost"),
 		PostgresPort:        getEnv("POSTGRES_PORT", "5432"),
 		PostgresUser:        getEnv("POSTGRES_USER", "postgres"),
