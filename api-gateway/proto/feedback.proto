@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package feedback;
+
+option go_package = "./proto/feedbackpb;feedbackpb";
+
+service FeedbackService {
+  rpc CreateFeedback(CreateFeedbackRequest) returns (FeedbackResponse);
+  rpc GetFeedbackByRoute(GetFeedbackByRouteRequest) returns (FeedbackListResponse);
+  rpc GetFeedbackByUser(GetFeedbackByUserRequest) returns (FeedbackListResponse);
+}
+
+message CreateFeedbackRequest {
+  string user_id = 1;
+  string route_id = 2;
+  string location_id = 3;
+  int32 rating = 4;
+  string comment = 5;
+}
+
+message GetFeedbackByRouteRequest {
+  string route_id = 1;
+}
+
+message GetFeedbackByUserRequest {
+  string user_id = 1;
+}
+
+message Feedback {
+  string feedback_id = 1;
+  string user_id = 2;
+  string route_id = 3;
+  string location_id = 4;
+  int32 rating = 5;
+  string comment = 6;
+  string created_at = 7;
+}
+
+message FeedbackResponse {
+  Feedback feedback = 1;
+}
+
+message FeedbackListResponse {
+  repeated Feedback feedbacks = 1;
+}
