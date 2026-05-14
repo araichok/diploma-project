@@ -79,5 +79,21 @@ func SetupRouter(
 		notificationHandler.GetUserNotifications,
 	)
 
+	// admin
+	protected.POST(
+		"/admin",
+		adminHandler.AddAdmin,
+	)
+
+	protected.GET(
+		"/admin/check/:user_id",
+		adminHandler.IsAdmin,
+	)
+
+	protected.GET(
+		"/admin/stats",
+		adminHandler.GetStats,
+	)
+
 	return r
 }
