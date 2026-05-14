@@ -463,7 +463,7 @@ const file_proto_notification_proto_rawDesc = "" +
 	"\x14GetUserNotifications\x12).notification.GetUserNotificationsRequest\x1a&.notification.NotificationListResponse\x12Q\n" +
 	"\n" +
 	"MarkAsRead\x12\x1f.notification.MarkAsReadRequest\x1a\".notification.NotificationResponse\x12X\n" +
-	"\x0eGetUnreadCount\x12#.notification.GetUnreadCountRequest\x1a!.notification.UnreadCountResponseB)Z'notification-service/proto;notificationb\x06proto3"
+	"\x0eGetUnreadCount\x12#.notification.GetUnreadCountRequest\x1a!.notification.UnreadCountResponseB\x16Z\x14./proto;notificationb\x06proto3"
 
 var (
 	file_proto_notification_proto_rawDescOnce sync.Once
