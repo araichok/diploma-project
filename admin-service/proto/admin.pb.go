@@ -584,7 +584,7 @@ const file_proto_admin_proto_rawDesc = "" +
 	"\fGetAllAdmins\x12\x1a.admin.GetAllAdminsRequest\x1a\x18.admin.AdminListResponse\x128\n" +
 	"\aIsAdmin\x12\x15.admin.IsAdminRequest\x1a\x16.admin.IsAdminResponse\x12D\n" +
 	"\vRemoveAdmin\x12\x19.admin.RemoveAdminRequest\x1a\x1a.admin.RemoveAdminResponse\x128\n" +
-	"\bGetStats\x12\x16.admin.GetStatsRequest\x1a\x14.admin.StatsResponseB\x1bZ\x19admin-service/proto;adminb\x06proto3"
+	"\bGetStats\x12\x16.admin.GetStatsRequest\x1a\x14.admin.StatsResponseB\x0fZ\r./proto;adminb\x06proto3"
 
 var (
 	file_proto_admin_proto_rawDescOnce sync.Once
