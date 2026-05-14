@@ -2,17 +2,16 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.34.0
-// source: proto/route_history.proto
+// source: proto/routehistory/route_history.proto
 
 package routehistory
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -34,7 +33,7 @@ type CreateHistoryRequest struct {
 
 func (x *CreateHistoryRequest) Reset() {
 	*x = CreateHistoryRequest{}
-	mi := &file_proto_route_history_proto_msgTypes[0]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +45,7 @@ func (x *CreateHistoryRequest) String() string {
 func (*CreateHistoryRequest) ProtoMessage() {}
 
 func (x *CreateHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[0]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +58,7 @@ func (x *CreateHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateHistoryRequest.ProtoReflect.Descriptor instead.
 func (*CreateHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{0}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CreateHistoryRequest) GetUserId() string {
@@ -99,7 +98,7 @@ type GetUserHistoryRequest struct {
 
 func (x *GetUserHistoryRequest) Reset() {
 	*x = GetUserHistoryRequest{}
-	mi := &file_proto_route_history_proto_msgTypes[1]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -111,7 +110,7 @@ func (x *GetUserHistoryRequest) String() string {
 func (*GetUserHistoryRequest) ProtoMessage() {}
 
 func (x *GetUserHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[1]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -124,7 +123,7 @@ func (x *GetUserHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetUserHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{1}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetUserHistoryRequest) GetUserId() string {
@@ -143,7 +142,7 @@ type GetHistoryByIdRequest struct {
 
 func (x *GetHistoryByIdRequest) Reset() {
 	*x = GetHistoryByIdRequest{}
-	mi := &file_proto_route_history_proto_msgTypes[2]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -155,7 +154,7 @@ func (x *GetHistoryByIdRequest) String() string {
 func (*GetHistoryByIdRequest) ProtoMessage() {}
 
 func (x *GetHistoryByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[2]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,7 +167,7 @@ func (x *GetHistoryByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHistoryByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetHistoryByIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{2}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetHistoryByIdRequest) GetHistoryId() string {
@@ -188,7 +187,7 @@ type UpdateHistoryStatusRequest struct {
 
 func (x *UpdateHistoryStatusRequest) Reset() {
 	*x = UpdateHistoryStatusRequest{}
-	mi := &file_proto_route_history_proto_msgTypes[3]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -200,7 +199,7 @@ func (x *UpdateHistoryStatusRequest) String() string {
 func (*UpdateHistoryStatusRequest) ProtoMessage() {}
 
 func (x *UpdateHistoryStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[3]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -213,7 +212,7 @@ func (x *UpdateHistoryStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateHistoryStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateHistoryStatusRequest) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{3}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UpdateHistoryStatusRequest) GetRouteId() string {
@@ -224,6 +223,102 @@ func (x *UpdateHistoryStatusRequest) GetRouteId() string {
 }
 
 func (x *UpdateHistoryStatusRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type CheckRouteCompletedRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RouteId       string                 `protobuf:"bytes,1,opt,name=route_id,json=routeId,proto3" json:"route_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckRouteCompletedRequest) Reset() {
+	*x = CheckRouteCompletedRequest{}
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckRouteCompletedRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckRouteCompletedRequest) ProtoMessage() {}
+
+func (x *CheckRouteCompletedRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckRouteCompletedRequest.ProtoReflect.Descriptor instead.
+func (*CheckRouteCompletedRequest) Descriptor() ([]byte, []int) {
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CheckRouteCompletedRequest) GetRouteId() string {
+	if x != nil {
+		return x.RouteId
+	}
+	return ""
+}
+
+type CheckRouteCompletedResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IsCompleted   bool                   `protobuf:"varint,1,opt,name=is_completed,json=isCompleted,proto3" json:"is_completed,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckRouteCompletedResponse) Reset() {
+	*x = CheckRouteCompletedResponse{}
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckRouteCompletedResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckRouteCompletedResponse) ProtoMessage() {}
+
+func (x *CheckRouteCompletedResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckRouteCompletedResponse.ProtoReflect.Descriptor instead.
+func (*CheckRouteCompletedResponse) Descriptor() ([]byte, []int) {
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *CheckRouteCompletedResponse) GetIsCompleted() bool {
+	if x != nil {
+		return x.IsCompleted
+	}
+	return false
+}
+
+func (x *CheckRouteCompletedResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
@@ -245,7 +340,7 @@ type History struct {
 
 func (x *History) Reset() {
 	*x = History{}
-	mi := &file_proto_route_history_proto_msgTypes[4]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -257,7 +352,7 @@ func (x *History) String() string {
 func (*History) ProtoMessage() {}
 
 func (x *History) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[4]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -270,7 +365,7 @@ func (x *History) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use History.ProtoReflect.Descriptor instead.
 func (*History) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{4}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *History) GetHistoryId() string {
@@ -331,7 +426,7 @@ type HistoryResponse struct {
 
 func (x *HistoryResponse) Reset() {
 	*x = HistoryResponse{}
-	mi := &file_proto_route_history_proto_msgTypes[5]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -343,7 +438,7 @@ func (x *HistoryResponse) String() string {
 func (*HistoryResponse) ProtoMessage() {}
 
 func (x *HistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[5]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -356,7 +451,7 @@ func (x *HistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryResponse.ProtoReflect.Descriptor instead.
 func (*HistoryResponse) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{5}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *HistoryResponse) GetHistory() *History {
@@ -375,7 +470,7 @@ type HistoryListResponse struct {
 
 func (x *HistoryListResponse) Reset() {
 	*x = HistoryListResponse{}
-	mi := &file_proto_route_history_proto_msgTypes[6]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -387,7 +482,7 @@ func (x *HistoryListResponse) String() string {
 func (*HistoryListResponse) ProtoMessage() {}
 
 func (x *HistoryListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_route_history_proto_msgTypes[6]
+	mi := &file_proto_routehistory_route_history_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -400,7 +495,7 @@ func (x *HistoryListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryListResponse.ProtoReflect.Descriptor instead.
 func (*HistoryListResponse) Descriptor() ([]byte, []int) {
-	return file_proto_route_history_proto_rawDescGZIP(), []int{6}
+	return file_proto_routehistory_route_history_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *HistoryListResponse) GetHistories() []*History {
@@ -410,16 +505,17 @@ func (x *HistoryListResponse) GetHistories() []*History {
 	return nil
 }
 
-var File_proto_route_history_proto protoreflect.FileDescriptor
+var File_proto_routehistory_route_history_proto protoreflect.FileDescriptor
 
-const file_proto_route_history_proto_rawDesc = "" +
+const file_proto_routehistory_route_history_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/route_history.proto\x12\froutehistory\"i\n" +
+	"&proto/routehistory/route_history.proto\x12\froutehistory\"}\n" +
 	"\x14CreateHistoryRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\broute_id\x18\x02 \x01(\tR\arouteId\x12\x1d\n" +
 	"\n" +
-	"route_name\x18\x03 \x01(\tR\trouteName\"0\n" +
+	"route_name\x18\x03 \x01(\tR\trouteName\x12\x12\n" +
+	"\x04mood\x18\x04 \x01(\tR\x04mood\"0\n" +
 	"\x15GetUserHistoryRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"6\n" +
 	"\x15GetHistoryByIdRequest\x12\x1d\n" +
@@ -427,87 +523,98 @@ const file_proto_route_history_proto_rawDesc = "" +
 	"history_id\x18\x01 \x01(\tR\thistoryId\"O\n" +
 	"\x1aUpdateHistoryStatusRequest\x12\x19\n" +
 	"\broute_id\x18\x01 \x01(\tR\arouteId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"\xb2\x01\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"7\n" +
+	"\x1aCheckRouteCompletedRequest\x12\x19\n" +
+	"\broute_id\x18\x01 \x01(\tR\arouteId\"X\n" +
+	"\x1bCheckRouteCompletedResponse\x12!\n" +
+	"\fis_completed\x18\x01 \x01(\bR\visCompleted\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"\xc6\x01\n" +
 	"\aHistory\x12\x1d\n" +
 	"\n" +
 	"history_id\x18\x01 \x01(\tR\thistoryId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
 	"\broute_id\x18\x03 \x01(\tR\arouteId\x12\x1d\n" +
 	"\n" +
-	"route_name\x18\x04 \x01(\tR\trouteName\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1d\n" +
+	"route_name\x18\x04 \x01(\tR\trouteName\x12\x12\n" +
+	"\x04mood\x18\x05 \x01(\tR\x04mood\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\"B\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\"B\n" +
 	"\x0fHistoryResponse\x12/\n" +
 	"\ahistory\x18\x01 \x01(\v2\x15.routehistory.HistoryR\ahistory\"J\n" +
 	"\x13HistoryListResponse\x123\n" +
-	"\thistories\x18\x01 \x03(\v2\x15.routehistory.HistoryR\thistories2\xf9\x02\n" +
+	"\thistories\x18\x01 \x03(\v2\x15.routehistory.HistoryR\thistories2\xe5\x03\n" +
 	"\x13RouteHistoryService\x12R\n" +
 	"\rCreateHistory\x12\".routehistory.CreateHistoryRequest\x1a\x1d.routehistory.HistoryResponse\x12X\n" +
 	"\x0eGetUserHistory\x12#.routehistory.GetUserHistoryRequest\x1a!.routehistory.HistoryListResponse\x12T\n" +
 	"\x0eGetHistoryById\x12#.routehistory.GetHistoryByIdRequest\x1a\x1d.routehistory.HistoryResponse\x12^\n" +
-	"\x13UpdateHistoryStatus\x12(.routehistory.UpdateHistoryStatusRequest\x1a\x1d.routehistory.HistoryResponseB*Z(route-history-service/proto;routehistoryb\x06proto3"
+	"\x13UpdateHistoryStatus\x12(.routehistory.UpdateHistoryStatusRequest\x1a\x1d.routehistory.HistoryResponse\x12j\n" +
+	"\x13CheckRouteCompleted\x12(.routehistory.CheckRouteCompletedRequest\x1a).routehistory.CheckRouteCompletedResponseB#Z!./proto/routehistory;routehistoryb\x06proto3"
 
 var (
-	file_proto_route_history_proto_rawDescOnce sync.Once
-	file_proto_route_history_proto_rawDescData []byte
+	file_proto_routehistory_route_history_proto_rawDescOnce sync.Once
+	file_proto_routehistory_route_history_proto_rawDescData []byte
 )
 
-func file_proto_route_history_proto_rawDescGZIP() []byte {
-	file_proto_route_history_proto_rawDescOnce.Do(func() {
-		file_proto_route_history_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_route_history_proto_rawDesc), len(file_proto_route_history_proto_rawDesc)))
+func file_proto_routehistory_route_history_proto_rawDescGZIP() []byte {
+	file_proto_routehistory_route_history_proto_rawDescOnce.Do(func() {
+		file_proto_routehistory_route_history_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_routehistory_route_history_proto_rawDesc), len(file_proto_routehistory_route_history_proto_rawDesc)))
 	})
-	return file_proto_route_history_proto_rawDescData
+	return file_proto_routehistory_route_history_proto_rawDescData
 }
 
-var file_proto_route_history_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_proto_route_history_proto_goTypes = []any{
-	(*CreateHistoryRequest)(nil),       // 0: routehistory.CreateHistoryRequest
-	(*GetUserHistoryRequest)(nil),      // 1: routehistory.GetUserHistoryRequest
-	(*GetHistoryByIdRequest)(nil),      // 2: routehistory.GetHistoryByIdRequest
-	(*UpdateHistoryStatusRequest)(nil), // 3: routehistory.UpdateHistoryStatusRequest
-	(*History)(nil),                    // 4: routehistory.History
-	(*HistoryResponse)(nil),            // 5: routehistory.HistoryResponse
-	(*HistoryListResponse)(nil),        // 6: routehistory.HistoryListResponse
+var file_proto_routehistory_route_history_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_routehistory_route_history_proto_goTypes = []any{
+	(*CreateHistoryRequest)(nil),        // 0: routehistory.CreateHistoryRequest
+	(*GetUserHistoryRequest)(nil),       // 1: routehistory.GetUserHistoryRequest
+	(*GetHistoryByIdRequest)(nil),       // 2: routehistory.GetHistoryByIdRequest
+	(*UpdateHistoryStatusRequest)(nil),  // 3: routehistory.UpdateHistoryStatusRequest
+	(*CheckRouteCompletedRequest)(nil),  // 4: routehistory.CheckRouteCompletedRequest
+	(*CheckRouteCompletedResponse)(nil), // 5: routehistory.CheckRouteCompletedResponse
+	(*History)(nil),                     // 6: routehistory.History
+	(*HistoryResponse)(nil),             // 7: routehistory.HistoryResponse
+	(*HistoryListResponse)(nil),         // 8: routehistory.HistoryListResponse
 }
-var file_proto_route_history_proto_depIdxs = []int32{
-	4, // 0: routehistory.HistoryResponse.history:type_name -> routehistory.History
-	4, // 1: routehistory.HistoryListResponse.histories:type_name -> routehistory.History
+var file_proto_routehistory_route_history_proto_depIdxs = []int32{
+	6, // 0: routehistory.HistoryResponse.history:type_name -> routehistory.History
+	6, // 1: routehistory.HistoryListResponse.histories:type_name -> routehistory.History
 	0, // 2: routehistory.RouteHistoryService.CreateHistory:input_type -> routehistory.CreateHistoryRequest
 	1, // 3: routehistory.RouteHistoryService.GetUserHistory:input_type -> routehistory.GetUserHistoryRequest
 	2, // 4: routehistory.RouteHistoryService.GetHistoryById:input_type -> routehistory.GetHistoryByIdRequest
 	3, // 5: routehistory.RouteHistoryService.UpdateHistoryStatus:input_type -> routehistory.UpdateHistoryStatusRequest
-	5, // 6: routehistory.RouteHistoryService.CreateHistory:output_type -> routehistory.HistoryResponse
-	6, // 7: routehistory.RouteHistoryService.GetUserHistory:output_type -> routehistory.HistoryListResponse
-	5, // 8: routehistory.RouteHistoryService.GetHistoryById:output_type -> routehistory.HistoryResponse
-	5, // 9: routehistory.RouteHistoryService.UpdateHistoryStatus:output_type -> routehistory.HistoryResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
+	4, // 6: routehistory.RouteHistoryService.CheckRouteCompleted:input_type -> routehistory.CheckRouteCompletedRequest
+	7, // 7: routehistory.RouteHistoryService.CreateHistory:output_type -> routehistory.HistoryResponse
+	8, // 8: routehistory.RouteHistoryService.GetUserHistory:output_type -> routehistory.HistoryListResponse
+	7, // 9: routehistory.RouteHistoryService.GetHistoryById:output_type -> routehistory.HistoryResponse
+	7, // 10: routehistory.RouteHistoryService.UpdateHistoryStatus:output_type -> routehistory.HistoryResponse
+	5, // 11: routehistory.RouteHistoryService.CheckRouteCompleted:output_type -> routehistory.CheckRouteCompletedResponse
+	7, // [7:12] is the sub-list for method output_type
+	2, // [2:7] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_proto_route_history_proto_init() }
-func file_proto_route_history_proto_init() {
-	if File_proto_route_history_proto != nil {
+func init() { file_proto_routehistory_route_history_proto_init() }
+func file_proto_routehistory_route_history_proto_init() {
+	if File_proto_routehistory_route_history_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_route_history_proto_rawDesc), len(file_proto_route_history_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_routehistory_route_history_proto_rawDesc), len(file_proto_routehistory_route_history_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_route_history_proto_goTypes,
-		DependencyIndexes: file_proto_route_history_proto_depIdxs,
-		MessageInfos:      file_proto_route_history_proto_msgTypes,
+		GoTypes:           file_proto_routehistory_route_history_proto_goTypes,
+		DependencyIndexes: file_proto_routehistory_route_history_proto_depIdxs,
+		MessageInfos:      file_proto_routehistory_route_history_proto_msgTypes,
 	}.Build()
-	File_proto_route_history_proto = out.File
-	file_proto_route_history_proto_goTypes = nil
-	file_proto_route_history_proto_depIdxs = nil
+	File_proto_routehistory_route_history_proto = out.File
+	file_proto_routehistory_route_history_proto_goTypes = nil
+	file_proto_routehistory_route_history_proto_depIdxs = nil
 }
