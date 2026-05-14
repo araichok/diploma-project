@@ -1,6 +1,6 @@
 module route-history-service
 
-go 1.26.1
+go 1.24.0
 
 replace notification-service => ../notification-service
 

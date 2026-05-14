@@ -1,6 +1,6 @@
 module feedback-service
 
-go 1.26.1
+go 1.24.0
 
 replace route-history-service => ../route-history-service
 
