@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	pb "notification-service/proto"
+	pb "feedback-service/proto/notification"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

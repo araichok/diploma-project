@@ -4,14 +4,11 @@ go 1.25.0
 
 replace route-history-service => ../route-history-service
 
-replace notification-service => ../notification-service
-
 require (
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	google.golang.org/grpc v1.81.0
 	google.golang.org/protobuf v1.36.11
-	notification-service v0.0.0-00010101000000-000000000000
 	route-history-service v0.0.0-00010101000000-000000000000
 )
 
