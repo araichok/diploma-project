@@ -3,12 +3,23 @@ services:
     build: .
     container_name: feedback_service
     restart: on-failure
+
     ports:
       - "50055:50055"
+
     depends_on:
       - feedback-postgres
-    env_file:
-      - .env
+
+    environment:
+      DB_HOST: feedback-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      DB_NAME: feedback_db
+
+      ROUTE_HISTORY_SERVICE_ADDR: route-history-service:50056
+      NOTIFICATION_SERVICE_ADDR: notification-service:50057
+
     networks:
       - diploma-network
 
@@ -16,14 +27,18 @@ services:
     image: postgres:16
     container_name: feedback_postgres
     restart: always
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: feedback_db
+
     ports:
       - "5436:5432"
+
     volumes:
       - feedback_postgres_data:/var/lib/postgresql/data
+
     networks:
       - diploma-network
 
