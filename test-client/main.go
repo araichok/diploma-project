@@ -137,7 +137,7 @@ func main() {
 	adminClient := adminpb.NewAdminServiceClient(adminConn)
 
 	adminRes, err := adminClient.AddAdmin(ctx, &adminpb.AddAdminRequest{
-		UserId: "user-001",
+		UserId: fmt.Sprintf("admin-test-%d", time.Now().Unix()),
 		Role:   "admin",
 	})
 	if err != nil {
@@ -149,8 +149,7 @@ func main() {
 	fmt.Println("Role:", adminRes.Admin.Role)
 
 	isAdminRes, err := adminClient.IsAdmin(ctx, &adminpb.IsAdminRequest{
-		UserId: "user-001",
-	})
+		UserId: fmt.Sprintf("admin-test-%d", time.Now().Unix())})
 	if err != nil {
 		log.Fatalf("IsAdmin failed: %v", err)
 	}
