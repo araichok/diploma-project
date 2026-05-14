@@ -39,11 +39,17 @@ func main() {
 		log.Fatal("failed to connect feedback-service: ", err)
 	}
 
+	notificationClient, err := client.NewNotificationClient(os.Getenv("NOTIFICATION_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect notification-service: ", err)
+	}
+
 	userHandler := handler.NewUserHandler(userClient)
 	preferenceHandler := handler.NewPreferenceHandler(preferenceClient)
 	routeHandler := handler.NewRouteHandler(routeClient)
 	historyHandler := handler.NewHistoryHandler(historyClient)
 	feedbackHandler := handler.NewFeedbackHandler(feedbackClient)
+	notificationHandler := handler.NewNotificationHandler(notificationClient)
 
 	r := router.SetupRouter(
 		userHandler,
@@ -51,6 +57,7 @@ func main() {
 		routeHandler,
 		historyHandler,
 		feedbackHandler,
+		notificationHandler,
 	)
 	port := os.Getenv("PORT")
 	if port == "" {
