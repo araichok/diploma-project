@@ -4,7 +4,7 @@ services:
     container_name: route-generation-service
     restart: on-failure
     ports:
-      - "50056:50056"
+      - "50053:50053"
     depends_on:
       - route-postgres
       - nats
