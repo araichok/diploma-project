@@ -29,6 +29,11 @@ func main() {
 		log.Fatal("failed to connect route-generation-service: ", err)
 	}
 
+	historyClient, err := client.NewHistoryClient(os.Getenv("HISTORY_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect route-history-service: ", err)
+	}
+
 	userHandler := handler.NewUserHandler(userClient)
 	preferenceHandler := handler.NewPreferenceHandler(preferenceClient)
 	routeHandler := handler.NewRouteHandler(routeClient)
