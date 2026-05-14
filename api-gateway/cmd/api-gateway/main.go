@@ -34,16 +34,23 @@ func main() {
 		log.Fatal("failed to connect route-history-service: ", err)
 	}
 
+	feedbackClient, err := client.NewFeedbackClient(os.Getenv("FEEDBACK_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect feedback-service: ", err)
+	}
+
 	userHandler := handler.NewUserHandler(userClient)
 	preferenceHandler := handler.NewPreferenceHandler(preferenceClient)
 	routeHandler := handler.NewRouteHandler(routeClient)
 	historyHandler := handler.NewHistoryHandler(historyClient)
+	feedbackHandler := handler.NewFeedbackHandler(feedbackClient)
 
 	r := router.SetupRouter(
 		userHandler,
 		preferenceHandler,
 		routeHandler,
 		historyHandler,
+		feedbackHandler,
 	)
 	port := os.Getenv("PORT")
 	if port == "" {

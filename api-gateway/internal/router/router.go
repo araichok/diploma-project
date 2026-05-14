@@ -12,6 +12,7 @@ func SetupRouter(
 	preferenceHandler *handler.PreferenceHandler,
 	routeHandler *handler.RouteHandler,
 	historyHandler *handler.HistoryHandler,
+	feedbackHandler *handler.FeedbackHandler,
 ) *gin.Engine {
 
 	r := gin.Default()
