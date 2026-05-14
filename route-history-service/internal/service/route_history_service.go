@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"route-history-service/internal/client"
 	"route-history-service/internal/repository"
 	"route-history-service/models"
 	pb "route-history-service/proto"
@@ -11,12 +12,15 @@ import (
 // RouteHistoryService handles business logic for route history
 type RouteHistoryService struct {
 	pb.UnimplementedRouteHistoryServiceServer
-	repo *repository.RouteHistoryRepository
+	repo               *repository.RouteHistoryRepository
+	notificationClient *client.NotificationClient
 }
 
-// NewRouteHistoryService creates a new RouteHistoryService
 func NewRouteHistoryService(repo *repository.RouteHistoryRepository) *RouteHistoryService {
-	return &RouteHistoryService{repo: repo}
+	return &RouteHistoryService{
+		repo:               repo,
+		notificationClient: client.NewNotificationClient(),
+	}
 }
 
 // CreateHistory saves a new route history entry via gRPC
@@ -94,6 +98,15 @@ func (s *RouteHistoryService) UpdateHistoryStatus(ctx context.Context, req *pb.U
 	err := s.repo.UpdateStatus(req.RouteId, req.Status)
 	if err != nil {
 		return nil, err
+	}
+
+	// Send notification when route is completed
+	if req.Status == "completed" {
+		go s.notificationClient.SendNotification(
+			req.RouteId,
+			"Your route has been completed! Please leave feedback.",
+			"route_completed",
+		)
 	}
 
 	return &pb.HistoryResponse{}, nil

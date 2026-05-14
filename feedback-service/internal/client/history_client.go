@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	pb "route-history-service/proto"
+	pb "feedback-service/proto/routehistory"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

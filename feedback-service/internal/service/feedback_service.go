@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"feedback-service/internal/client"
 	"feedback-service/internal/repository"
 	"feedback-service/models"
 	pb "feedback-service/proto"
@@ -11,12 +12,16 @@ import (
 // FeedbackService handles business logic for feedback
 type FeedbackService struct {
 	pb.UnimplementedFeedbackServiceServer
-	repo *repository.FeedbackRepository
+	repo               *repository.FeedbackRepository
+	notificationClient *client.NotificationClient
 }
 
 // NewFeedbackService creates a new FeedbackService
 func NewFeedbackService(repo *repository.FeedbackRepository) *FeedbackService {
-	return &FeedbackService{repo: repo}
+	return &FeedbackService{
+		repo:               repo,
+		notificationClient: client.NewNotificationClient(),
+	}
 }
 
 // CreateFeedback saves a new feedback via gRPC
@@ -33,6 +38,13 @@ func (s *FeedbackService) CreateFeedback(ctx context.Context, req *pb.CreateFeed
 	if err != nil {
 		return nil, err
 	}
+
+	// Send notification to user
+	go s.notificationClient.SendNotification(
+		req.UserId,
+		"Your feedback has been submitted successfully!",
+		"feedback_submitted",
+	)
 
 	return &pb.FeedbackResponse{
 		Feedback: &pb.Feedback{
