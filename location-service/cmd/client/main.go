@@ -37,7 +37,7 @@ func main() {
 			Date:     "2026-05-11",
 			Budget:   10000,
 			Duration: 4,
-			Location: "Taraz, Kazakhstan",
+			Location: "Astana",
 		},
 	)
 	if err != nil {
