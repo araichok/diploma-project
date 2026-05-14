@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 
 	"route-history-service/internal/client"
 	"route-history-service/internal/repository"
@@ -9,21 +10,21 @@ import (
 	pb "route-history-service/proto"
 )
 
-// RouteHistoryService handles business logic for route history
 type RouteHistoryService struct {
 	pb.UnimplementedRouteHistoryServiceServer
-	repo               *repository.RouteHistoryRepository
-	notificationClient *client.NotificationClient
+	repo                  *repository.RouteHistoryRepository
+	notificationClient    *client.NotificationClient
+	routeGenerationClient *client.RouteGenerationClient
 }
 
 func NewRouteHistoryService(repo *repository.RouteHistoryRepository) *RouteHistoryService {
 	return &RouteHistoryService{
-		repo:               repo,
-		notificationClient: client.NewNotificationClient(),
+		repo:                  repo,
+		notificationClient:    client.NewNotificationClient(),
+		routeGenerationClient: client.NewRouteGenerationClient(),
 	}
 }
 
-// CreateHistory saves a new route history entry via gRPC
 func (s *RouteHistoryService) CreateHistory(ctx context.Context, req *pb.CreateHistoryRequest) (*pb.HistoryResponse, error) {
 	history := &models.RouteHistory{
 		UserID:    req.UserId,
@@ -32,7 +33,14 @@ func (s *RouteHistoryService) CreateHistory(ctx context.Context, req *pb.CreateH
 		Mood:      req.Mood,
 	}
 
-	err := s.repo.Create(history)
+	route, err := s.routeGenerationClient.GetRouteByID(req.RouteId)
+	if err == nil && route != nil {
+		history.RouteName = route.Title
+		history.Mood = route.Mood
+		log.Printf("Got route details: %s, mood: %s", route.Title, route.Mood)
+	}
+
+	err = s.repo.Create(history)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +58,6 @@ func (s *RouteHistoryService) CreateHistory(ctx context.Context, req *pb.CreateH
 	}, nil
 }
 
-// GetUserHistory returns all history for a user via gRPC
 func (s *RouteHistoryService) GetUserHistory(ctx context.Context, req *pb.GetUserHistoryRequest) (*pb.HistoryListResponse, error) {
 	histories, err := s.repo.GetByUserID(req.UserId)
 	if err != nil {
@@ -73,7 +80,6 @@ func (s *RouteHistoryService) GetUserHistory(ctx context.Context, req *pb.GetUse
 	return &pb.HistoryListResponse{Histories: result}, nil
 }
 
-// GetHistoryById returns a single history entry via gRPC
 func (s *RouteHistoryService) GetHistoryById(ctx context.Context, req *pb.GetHistoryByIdRequest) (*pb.HistoryResponse, error) {
 	h, err := s.repo.GetByID(req.HistoryId)
 	if err != nil {
@@ -93,14 +99,12 @@ func (s *RouteHistoryService) GetHistoryById(ctx context.Context, req *pb.GetHis
 	}, nil
 }
 
-// UpdateHistoryStatus updates the status of a route history entry via gRPC
 func (s *RouteHistoryService) UpdateHistoryStatus(ctx context.Context, req *pb.UpdateHistoryStatusRequest) (*pb.HistoryResponse, error) {
 	err := s.repo.UpdateStatus(req.RouteId, req.Status)
 	if err != nil {
 		return nil, err
 	}
 
-	// Send notification when route is completed
 	if req.Status == "completed" {
 		go s.notificationClient.SendNotification(
 			req.RouteId,
