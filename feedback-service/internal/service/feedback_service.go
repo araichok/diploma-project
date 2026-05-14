@@ -14,6 +14,7 @@ type FeedbackService struct {
 	pb.UnimplementedFeedbackServiceServer
 	repo               *repository.FeedbackRepository
 	notificationClient *client.NotificationClient
+	historyClient      *client.HistoryClient
 }
 
 // NewFeedbackService creates a new FeedbackService
