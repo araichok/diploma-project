@@ -37,9 +37,14 @@ func main() {
 	userHandler := handler.NewUserHandler(userClient)
 	preferenceHandler := handler.NewPreferenceHandler(preferenceClient)
 	routeHandler := handler.NewRouteHandler(routeClient)
+	historyHandler := handler.NewHistoryHandler(historyClient)
 
-	r := router.SetupRouter(userHandler, preferenceHandler, routeHandler)
-
+	r := router.SetupRouter(
+		userHandler,
+		preferenceHandler,
+		routeHandler,
+		historyHandler,
+	)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

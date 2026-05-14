@@ -11,6 +11,7 @@ func SetupRouter(
 	userHandler *handler.UserHandler,
 	preferenceHandler *handler.PreferenceHandler,
 	routeHandler *handler.RouteHandler,
+	historyHandler *handler.HistoryHandler,
 ) *gin.Engine {
 
 	r := gin.Default()
@@ -50,6 +51,12 @@ func SetupRouter(
 	protected.GET(
 		"/route/:route_id",
 		routeHandler.GetRouteByID,
+	)
+
+	// history
+	protected.GET(
+		"/history/:user_id",
+		historyHandler.GetUserHistory,
 	)
 
 	return r
