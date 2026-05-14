@@ -11,7 +11,6 @@ replace admin-service => ../admin-service
 replace notification-service => ../notification-service
 
 require (
-	admin-service v0.0.0-00010101000000-000000000000
 	feedback-service v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.81.0
 	notification-service v0.0.0-00010101000000-000000000000
