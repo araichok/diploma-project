@@ -23,6 +23,7 @@ const (
 	RouteHistoryService_GetUserHistory_FullMethodName      = "/routehistory.RouteHistoryService/GetUserHistory"
 	RouteHistoryService_GetHistoryById_FullMethodName      = "/routehistory.RouteHistoryService/GetHistoryById"
 	RouteHistoryService_UpdateHistoryStatus_FullMethodName = "/routehistory.RouteHistoryService/UpdateHistoryStatus"
+	RouteHistoryService_CheckRouteCompleted_FullMethodName = "/routehistory.RouteHistoryService/CheckRouteCompleted"
 )
 
 // RouteHistoryServiceClient is the client API for RouteHistoryService service.
@@ -33,6 +34,7 @@ type RouteHistoryServiceClient interface {
 	GetUserHistory(ctx context.Context, in *GetUserHistoryRequest, opts ...grpc.CallOption) (*HistoryListResponse, error)
 	GetHistoryById(ctx context.Context, in *GetHistoryByIdRequest, opts ...grpc.CallOption) (*HistoryResponse, error)
 	UpdateHistoryStatus(ctx context.Context, in *UpdateHistoryStatusRequest, opts ...grpc.CallOption) (*HistoryResponse, error)
+	CheckRouteCompleted(ctx context.Context, in *CheckRouteCompletedRequest, opts ...grpc.CallOption) (*CheckRouteCompletedResponse, error)
 }
 
 type routeHistoryServiceClient struct {
@@ -83,6 +85,16 @@ func (c *routeHistoryServiceClient) UpdateHistoryStatus(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *routeHistoryServiceClient) CheckRouteCompleted(ctx context.Context, in *CheckRouteCompletedRequest, opts ...grpc.CallOption) (*CheckRouteCompletedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckRouteCompletedResponse)
+	err := c.cc.Invoke(ctx, RouteHistoryService_CheckRouteCompleted_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RouteHistoryServiceServer is the server API for RouteHistoryService service.
 // All implementations must embed UnimplementedRouteHistoryServiceServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type RouteHistoryServiceServer interface {
 	GetUserHistory(context.Context, *GetUserHistoryRequest) (*HistoryListResponse, error)
 	GetHistoryById(context.Context, *GetHistoryByIdRequest) (*HistoryResponse, error)
 	UpdateHistoryStatus(context.Context, *UpdateHistoryStatusRequest) (*HistoryResponse, error)
+	CheckRouteCompleted(context.Context, *CheckRouteCompletedRequest) (*CheckRouteCompletedResponse, error)
 	mustEmbedUnimplementedRouteHistoryServiceServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedRouteHistoryServiceServer) GetHistoryById(context.Context, *G
 }
 func (UnimplementedRouteHistoryServiceServer) UpdateHistoryStatus(context.Context, *UpdateHistoryStatusRequest) (*HistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateHistoryStatus not implemented")
+}
+func (UnimplementedRouteHistoryServiceServer) CheckRouteCompleted(context.Context, *CheckRouteCompletedRequest) (*CheckRouteCompletedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CheckRouteCompleted not implemented")
 }
 func (UnimplementedRouteHistoryServiceServer) mustEmbedUnimplementedRouteHistoryServiceServer() {}
 func (UnimplementedRouteHistoryServiceServer) testEmbeddedByValue()                             {}
@@ -206,6 +222,24 @@ func _RouteHistoryService_UpdateHistoryStatus_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RouteHistoryService_CheckRouteCompleted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckRouteCompletedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouteHistoryServiceServer).CheckRouteCompleted(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RouteHistoryService_CheckRouteCompleted_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouteHistoryServiceServer).CheckRouteCompleted(ctx, req.(*CheckRouteCompletedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RouteHistoryService_ServiceDesc is the grpc.ServiceDesc for RouteHistoryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var RouteHistoryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateHistoryStatus",
 			Handler:    _RouteHistoryService_UpdateHistoryStatus_Handler,
+		},
+		{
+			MethodName: "CheckRouteCompleted",
+			Handler:    _RouteHistoryService_CheckRouteCompleted_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -100,18 +100,60 @@ func (s *RouteHistoryService) GetHistoryById(ctx context.Context, req *pb.GetHis
 }
 
 func (s *RouteHistoryService) UpdateHistoryStatus(ctx context.Context, req *pb.UpdateHistoryStatusRequest) (*pb.HistoryResponse, error) {
+
 	err := s.repo.UpdateStatus(req.RouteId, req.Status)
 	if err != nil {
 		return nil, err
 	}
 
+	history, err := s.repo.GetByRouteID(req.RouteId)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Status == "planned" {
+		go s.notificationClient.SendNotification(
+			history.UserID,
+			"You have a planned trip.",
+			"route_planned",
+		)
+	}
+
 	if req.Status == "completed" {
 		go s.notificationClient.SendNotification(
-			req.RouteId,
+			history.UserID,
 			"Your route has been completed! Please leave feedback.",
 			"route_completed",
 		)
 	}
 
-	return &pb.HistoryResponse{}, nil
+	return &pb.HistoryResponse{
+		History: &pb.History{
+			HistoryId: history.ID,
+			UserId:    history.UserID,
+			RouteId:   history.RouteID,
+			RouteName: history.RouteName,
+			Mood:      history.Mood,
+			Status:    history.Status,
+			CreatedAt: history.CreatedAt.String(),
+		},
+	}, nil
+}
+
+func (s *RouteHistoryService) CheckRouteCompleted(
+	ctx context.Context,
+	req *pb.CheckRouteCompletedRequest,
+) (*pb.CheckRouteCompletedResponse, error) {
+
+	history, err := s.repo.GetByRouteID(req.RouteId)
+	if err != nil {
+		return nil, err
+	}
+
+	isCompleted := history.Status == "completed"
+
+	return &pb.CheckRouteCompletedResponse{
+		IsCompleted: isCompleted,
+		Status:      history.Status,
+	}, nil
 }

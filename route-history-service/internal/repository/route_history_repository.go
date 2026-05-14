@@ -92,6 +92,33 @@ func (r *RouteHistoryRepository) GetByID(id string) (*models.RouteHistory, error
 	return &h, nil
 }
 
+// GetByRouteID returns a single route history entry by route ID
+func (r *RouteHistoryRepository) GetByRouteID(routeID string) (*models.RouteHistory, error) {
+	var h models.RouteHistory
+
+	err := r.db.QueryRow(
+		`SELECT id, user_id, route_id, location_id, route_name, mood, status, created_at 
+		 FROM route_histories 
+		 WHERE route_id = $1`,
+		routeID,
+	).Scan(
+		&h.ID,
+		&h.UserID,
+		&h.RouteID,
+		&h.LocationID,
+		&h.RouteName,
+		&h.Mood,
+		&h.Status,
+		&h.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &h, nil
+}
+
 // UpdateStatus updates the status of a route history entry
 func (r *RouteHistoryRepository) UpdateStatus(routeID string, status string) error {
 	var completedAt interface{}
