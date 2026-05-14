@@ -44,12 +44,18 @@ func main() {
 		log.Fatal("failed to connect notification-service: ", err)
 	}
 
+	adminClient, err := client.NewAdminClient(os.Getenv("ADMIN_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect admin-service: ", err)
+	}
+
 	userHandler := handler.NewUserHandler(userClient)
 	preferenceHandler := handler.NewPreferenceHandler(preferenceClient)
 	routeHandler := handler.NewRouteHandler(routeClient)
 	historyHandler := handler.NewHistoryHandler(historyClient)
 	feedbackHandler := handler.NewFeedbackHandler(feedbackClient)
 	notificationHandler := handler.NewNotificationHandler(notificationClient)
+	adminHandler := handler.NewAdminHandler(adminClient)
 
 	r := router.SetupRouter(
 		userHandler,
@@ -58,6 +64,7 @@ func main() {
 		historyHandler,
 		feedbackHandler,
 		notificationHandler,
+		adminHandler,
 	)
 	port := os.Getenv("PORT")
 	if port == "" {

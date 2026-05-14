@@ -14,6 +14,7 @@ func SetupRouter(
 	historyHandler *handler.HistoryHandler,
 	feedbackHandler *handler.FeedbackHandler,
 	notificationHandler *handler.NotificationHandler,
+	adminHandler *handler.AdminHandler,
 ) *gin.Engine {
 
 	r := gin.Default()
