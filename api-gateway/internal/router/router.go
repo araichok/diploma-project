@@ -72,5 +72,11 @@ func SetupRouter(
 		feedbackHandler.GetFeedbackByRoute,
 	)
 
+	// notifications
+	protected.GET(
+		"/notifications/:user_id",
+		notificationHandler.GetUserNotifications,
+	)
+
 	return r
 }
