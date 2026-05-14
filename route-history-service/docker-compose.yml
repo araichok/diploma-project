@@ -3,12 +3,22 @@ services:
     build: .
     container_name: route_history_service
     restart: on-failure
+
     ports:
       - "50056:50056"
+
     depends_on:
       - route-history-postgres
-    env_file:
-      - .env
+
+    environment:
+      DB_HOST: route-history-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      DB_NAME: route_history_db
+
+      ROUTE_GENERATION_SERVICE_ADDR: route-generation-service:50053
+
     networks:
       - diploma-network
 
@@ -16,14 +26,18 @@ services:
     image: postgres:16
     container_name: route_history_postgres
     restart: always
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: route_history_db
+
     ports:
       - "5437:5432"
+
     volumes:
       - route_history_postgres_data:/var/lib/postgresql/data
+
     networks:
       - diploma-network
 
