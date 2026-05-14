@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package feedback;
 
-option go_package = "feedback-service/proto;feedback";
+option go_package = "./proto;feedback";
 
 service FeedbackService {
   rpc CreateFeedback(CreateFeedbackRequest) returns (FeedbackResponse);

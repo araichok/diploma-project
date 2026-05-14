@@ -399,7 +399,7 @@ const file_proto_feedback_proto_rawDesc = "" +
 	"\x0fFeedbackService\x12M\n" +
 	"\x0eCreateFeedback\x12\x1f.feedback.CreateFeedbackRequest\x1a\x1a.feedback.FeedbackResponse\x12Y\n" +
 	"\x12GetFeedbackByRoute\x12#.feedback.GetFeedbackByRouteRequest\x1a\x1e.feedback.FeedbackListResponse\x12W\n" +
-	"\x11GetFeedbackByUser\x12\".feedback.GetFeedbackByUserRequest\x1a\x1e.feedback.FeedbackListResponseB!Z\x1ffeedback-service/proto;feedbackb\x06proto3"
+	"\x11GetFeedbackByUser\x12\".feedback.GetFeedbackByUserRequest\x1a\x1e.feedback.FeedbackListResponseB\x12Z\x10./proto;feedbackb\x06proto3"
 
 var (
 	file_proto_feedback_proto_rawDescOnce sync.Once
