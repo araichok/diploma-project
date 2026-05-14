@@ -20,7 +20,7 @@ type RouteGenerationClient struct {
 func NewRouteGenerationClient() *RouteGenerationClient {
 	addr := os.Getenv("ROUTE_GENERATION_SERVICE_ADDR")
 	if addr == "" {
-		addr = "localhost:50053"
+		addr = "route-generation-service:50053"
 	}
 
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
