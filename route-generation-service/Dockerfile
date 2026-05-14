@@ -9,6 +9,6 @@ COPY . .
 
 RUN go build -o main ./cmd/server
 
-EXPOSE 50056
+EXPOSE 50053
 
 CMD ["./main"]
