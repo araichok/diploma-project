@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../models/mood.dart';
 import '../providers/mood_provider.dart';
 import '../widgets/custom_logo.dart';
 
 class EmotionScreen extends StatelessWidget {
   const EmotionScreen({super.key});
 
-  final List<Mood> moods = Mood.values;
+  final List<TravelCategory> categories = TravelCategory.values;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,7 @@ class EmotionScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             const Text(
-              'How are you feeling today?',
+              'What kind of experience do you prefer?',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -54,7 +53,7 @@ class EmotionScreen extends StatelessWidget {
             ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.2, end: 0),
             const SizedBox(height: 10),
             const Text(
-              'Select your current mood and we\'ll create\nthe perfect travel experience for you',
+              'Choose your travel style and we\'ll create\nthe perfect route for you',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black54,
@@ -71,10 +70,10 @@ class EmotionScreen extends StatelessWidget {
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
-                itemCount: moods.length,
+                itemCount: categories.length,
                 itemBuilder: (context, index) {
-                  final mood = moods[index];
-                  return _buildMoodCard(context, mood);
+                  final category = categories[index];
+                  return _buildCategoryCard(context, category);
                 },
               ),
             ),
@@ -84,14 +83,14 @@ class EmotionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMoodCard(BuildContext context, Mood mood) {
+  Widget _buildCategoryCard(BuildContext context, TravelCategory category) {
     return Consumer<MoodProvider>(
       builder: (context, moodProvider, child) {
-        bool isSelected = moodProvider.selectedMood == mood;
+        bool isSelected = moodProvider.selectedCategory == category;
         
         return GestureDetector(
           onTap: () {
-            moodProvider.selectMood(mood);
+            moodProvider.selectCategory(category);
             Navigator.pushNamed(context, '/preferences');
           },
           child: AnimatedContainer(
@@ -101,17 +100,17 @@ class EmotionScreen extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isSelected
-                    ? [mood.color, mood.color.withOpacity(0.7)]
+                    ? [category.color, category.color.withOpacity(0.7)]
                     : [Colors.white, Colors.grey.shade50],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? mood.color : Colors.grey.shade300,
+                color: isSelected ? category.color : Colors.grey.shade300,
                 width: isSelected ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isSelected ? mood.color.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
+                  color: isSelected ? category.color.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -121,13 +120,13 @@ class EmotionScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  mood.icon,
+                  category.icon,
                   size: 50,
-                  color: isSelected ? Colors.white : mood.color,
+                  color: isSelected ? Colors.white : category.color,
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  mood.displayName,
+                  category.displayName,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -146,7 +145,7 @@ class EmotionScreen extends StatelessWidget {
                       'Selected',
                       style: TextStyle(
                         fontSize: 10,
-                        color: mood.color,
+                        color: category.color,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
