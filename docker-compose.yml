@@ -1,0 +1,165 @@
+services:
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      USER_SERVICE_ADDR: user-service:50051
+      PREFERENCE_SERVICE_ADDR: preference-service:50052
+      ROUTE_SERVICE_ADDR: route-generation-service:50053
+      JWT_SECRET: my_super_secret_key
+    depends_on:
+      - user-service
+      - preference-service
+      - route-generation-service
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "50051:50051"
+    environment:
+      DB_HOST: user-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 12345
+      DB_NAME: tourism_ai
+      DB_SSLMODE: disable
+      JWT_SECRET: my_super_secret_key
+      REDIS_HOST: user-redis
+      REDIS_PORT: 6379
+      NATS_URL: nats://nats:4222
+    depends_on:
+      - user-postgres
+      - user-redis
+      - nats
+
+  preference-service:
+    build: ./preference-service
+    container_name: preference-service
+    ports:
+      - "50052:50052"
+    environment:
+      DB_HOST: preference-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: preference_db
+      GRPC_PORT: 50052
+      NATS_URL: nats://nats:4222
+      REDIS_HOST: preference-redis
+      REDIS_PORT: 6379
+    depends_on:
+      - preference-postgres
+      - preference-redis
+      - nats
+
+  route-generation-service:
+    build: ./route-generation-service
+    container_name: route-generation-service
+    ports:
+      - "50053:50053"
+    environment:
+      GRPC_PORT: 50053
+      POSTGRES_HOST: route-postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: route_db
+      NATS_URL: nats://nats:4222
+      LOCATION_SERVICE_ADDR: location-service:50054
+    depends_on:
+      - route-postgres
+      - nats
+      - location-service
+
+  location-service:
+    build: ./location-service
+    container_name: location-service
+    ports:
+      - "50054:50054"
+    environment:
+      GEOAPIFY_API_KEY: 29d08d752cc44792953561b6cdaf446f
+      DB_HOST: location-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: location_db
+    depends_on:
+      - location-postgres
+
+  user-postgres:
+    image: postgres:16
+    container_name: user-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: tourism_ai
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+      - ./user-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  preference-postgres:
+    image: postgres:16
+    container_name: preference-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: preference_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - preference_postgres_data:/var/lib/postgresql/data
+      - ./preference-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  route-postgres:
+    image: postgres:15
+    container_name: route-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: route_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./route-generation-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  location-postgres:
+    image: postgres:16
+    container_name: location-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: location_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - location_postgres_data:/var/lib/postgresql/data
+      - ./location-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  user-redis:
+    image: redis:7
+    container_name: user-redis
+    ports:
+      - "6379:6379"
+
+  preference-redis:
+    image: redis:7
+    container_name: preference-redis
+    ports:
+      - "6380:6379"
+
+  nats:
+    image: nats:latest
+    container_name: nats
+    ports:
+      - "4222:4222"
+
+volumes:
+  user_postgres_data:
+  preference_postgres_data:
+  location_postgres_data:
