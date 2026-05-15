@@ -112,8 +112,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (password.isEmpty) {
       return 'Password is required';
     }
-    if (password.length < 6) {
-      return 'Password must be at least 6 characters';
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters';
     }
     
     List<String> errors = [];
@@ -406,8 +406,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.pushReplacementNamed(context, '/');
                               } else if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Invalid email or password'),
+                                  SnackBar(
+                                    content: Text(authProvider.lastError ?? 'Invalid email or password'),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
@@ -448,8 +448,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
                               } else if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Email or phone already exists'),
+                                  SnackBar(
+                                    content: Text(authProvider.lastError ?? 'Registration failed'),
                                     backgroundColor: Colors.red,
                                   ),
                                 );

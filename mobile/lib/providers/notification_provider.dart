@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/notification.dart';
+import '../services/api_service.dart';
 
 class NotificationProvider extends ChangeNotifier {
   List<AppNotification> _notifications = [];
@@ -7,9 +8,21 @@ class NotificationProvider extends ChangeNotifier {
   List<AppNotification> get notifications => _notifications;
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
-  void addNotification(AppNotification notification) {
-    _notifications.insert(0, notification);
-    notifyListeners();
+  Future<void> loadFromBackend(String userId) async {
+    try {
+      final items = await ApiService().getNotifications(userId);
+      _notifications = items.map((n) => AppNotification(
+        id: n['id'] as String? ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: n['user_id'] as String? ?? userId,
+        title: n['type'] as String? ?? 'Notification',
+        message: n['message'] as String? ?? '',
+        isRead: n['is_read'] as bool? ?? false,
+        createdAt: n['created_at'] != null
+            ? DateTime.tryParse(n['created_at'] as String) ?? DateTime.now()
+            : DateTime.now(),
+      )).toList();
+      notifyListeners();
+    } catch (_) {}
   }
 
   void markAsRead(String id) {
@@ -27,14 +40,9 @@ class NotificationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void sendRouteGeneratedNotification(String userId, String routeName) {
-    addNotification(AppNotification(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: userId,
-      title: 'New Route Generated!',
-      message: 'Your route "$routeName" has been created. Check it out!',
-      createdAt: DateTime.now(),
-    ));
+  void addNotification(AppNotification notification) {
+    _notifications.insert(0, notification);
+    notifyListeners();
   }
 
   void clearNotifications() {

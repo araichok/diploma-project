@@ -72,7 +72,7 @@ extension TravelCategoryExtension on TravelCategory {
 class MoodProvider extends ChangeNotifier {
   TravelCategory? _selectedCategory;
   String _selectedCity = '';
-  String _duration = '1 час';
+  String _duration = '2 часа';
   DateTime _selectedDate = DateTime.now();
   double _budget = 500;
 

@@ -1,14 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/auth_provider.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = Provider.of<AuthProvider>(context, listen: false).currentUser?.id ?? '';
+      if (userId.isNotEmpty) {
+        Provider.of<NotificationProvider>(context, listen: false).loadFromBackend(userId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final notificationProvider = Provider.of<NotificationProvider>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
@@ -42,8 +59,8 @@ class NotificationsScreen extends StatelessWidget {
                 final notification = notificationProvider.notifications[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: notification.isRead 
-                        ? Colors.grey.shade200 
+                    backgroundColor: notification.isRead
+                        ? Colors.grey.shade200
                         : Colors.blue.shade100,
                     child: Icon(
                       Icons.notifications,
@@ -53,8 +70,8 @@ class NotificationsScreen extends StatelessWidget {
                   title: Text(
                     notification.title,
                     style: TextStyle(
-                      fontWeight: notification.isRead 
-                          ? FontWeight.normal 
+                      fontWeight: notification.isRead
+                          ? FontWeight.normal
                           : FontWeight.bold,
                     ),
                   ),
@@ -65,9 +82,6 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                   onTap: () {
                     notificationProvider.markAsRead(notification.id);
-                    if (notification.routeId != null) {
-                      // Navigate to route
-                    }
                   },
                 );
               },
@@ -78,9 +92,9 @@ class NotificationsScreen extends StatelessWidget {
   String _formatTime(DateTime time) {
     final diff = DateTime.now().difference(time);
     if (diff.inHours < 24) {
-      return '${diff.inHours} hours ago';
+      return '${diff.inHours}h ago';
     } else {
-      return '${diff.inDays} days ago';
+      return '${diff.inDays}d ago';
     }
   }
 }

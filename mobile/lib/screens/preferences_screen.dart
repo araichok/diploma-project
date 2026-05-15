@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/mood_provider.dart';
+import '../providers/map_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/custom_logo.dart';
 
 class PreferencesScreen extends StatefulWidget {
@@ -276,7 +278,18 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           ),
                         );
                       } else {
-                        // Переход на карту
+                        final mapProvider = Provider.of<MapProvider>(context, listen: false);
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        final color = moodProvider.selectedCategory!.color;
+                        final hex = '#${color.value.toRadixString(16).substring(2)}';
+                        mapProvider.generateRoute(
+                          userId: authProvider.currentUser?.id ?? '',
+                          city: moodProvider.selectedCity,
+                          category: moodProvider.selectedCategory!.displayName,
+                          duration: moodProvider.duration,
+                          budget: moodProvider.budget,
+                          markerColor: hex,
+                        );
                         Navigator.pushNamed(context, '/map');
                       }
                     },

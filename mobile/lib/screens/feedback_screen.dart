@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/feedback_provider.dart';
 import '../providers/auth_provider.dart';
-import '../models/feedback.dart';
 
 class FeedbackScreen extends StatefulWidget {
   final String routeId;
@@ -101,30 +100,25 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             
             if (existingFeedback == null)
               ElevatedButton(
-                onPressed: _selectedRating == 0 ? null : () {
-                  final feedback = RouteFeedback(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                onPressed: _selectedRating == 0 ? null : () async {
+                  final success = await feedbackProvider.submitFeedback(
                     userId: authProvider.currentUser!.id,
                     userName: authProvider.currentUser!.name,
                     routeId: widget.routeId,
                     routeName: widget.routeName,
                     rating: _rating,
-                    comment: _commentController.text.isEmpty 
-                        ? 'No comment' 
-                        : _commentController.text,
-                    createdAt: DateTime.now(),
+                    comment: _commentController.text,
                   );
-                  
-                  feedbackProvider.addFeedback(feedback);
-                  
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Thank you for your feedback!'),
-                      backgroundColor: Colors.green,
+                    SnackBar(
+                      content: Text(success
+                          ? 'Thank you for your feedback!'
+                          : 'Failed to submit. Please try again.'),
+                      backgroundColor: success ? Colors.green : Colors.red,
                     ),
                   );
-                  
-                  Navigator.pop(context);
+                  if (success) Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),

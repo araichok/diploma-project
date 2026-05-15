@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'providers/mood_provider.dart';
 import 'providers/map_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/feedback_provider.dart';
+import 'providers/saved_routes_provider.dart';
 import 'screens/emotion_screen.dart';
 import 'screens/preferences_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/notifications_screen.dart';
-import 'providers/saved_routes_provider.dart';
+import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  await ApiService().init();
   runApp(const MyApp());
 }
 
