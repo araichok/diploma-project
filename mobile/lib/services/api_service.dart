@@ -3,71 +3,145 @@ import 'package:http/http.dart' as http;
 import '../models/route_stop.dart';
 
 class ApiService {
-  // Если нет бэкенда, используем демо-данные
-  static const bool useMockData = true; // Включите мок-данные
-  static const String baseUrl = 'http://localhost:8080/api'; // Замените когда будет бэкенд
-  
-  Future<RouteData> fetchRoute({
+  static const String baseUrl = 'https://repo-production-6b56.up.railway.app/api';
+
+  // ---------- Роутинг / предпочтения ----------
+  Future<Map<String, dynamic>> createPreferences({
+    required String userId,
     required String city,
     required String category,
     required String duration,
     required double budget,
   }) async {
-    if (useMockData) {
-      // Возвращаем демо-данные вместо запроса к бэкенду
-      await Future.delayed(const Duration(seconds: 1));
-      return _getMockRouteData(city, category);
+    final url = Uri.parse('$baseUrl/v1/preferences');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'user_id': userId,
+        'city': city,
+        'category': category,
+        'duration': duration,
+        'budget': budget,
+      }),
+    ).timeout(const Duration(seconds: 10));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Create preferences failed: ${response.statusCode}');
     }
-    
-    try {
-      final url = Uri.parse('$baseUrl/generate-route');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'city': city,
-          'category': category,
-          'duration': duration,
-          'budget': budget,
-        }),
-      ).timeout(const Duration(seconds: 10));
-      
-      if (response.statusCode == 200) {
-        return RouteData.fromJson(json.decode(response.body));
-      } else {
-        throw Exception('Failed to load route: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching route: $e');
-  
-      return _getMockRouteData(city, category);
-    }
+    return json.decode(response.body);
   }
-  
-  RouteData _getMockRouteData(String city, String category) {
-    final stops = _getMockStops(city);
-    return RouteData(
-      routeId: 'mock_${DateTime.now().millisecondsSinceEpoch}',
-      routeName: '$city ${category.toUpperCase()} Tour',
-      stops: stops,
-    );
-  }
-  
-  List<RouteStop> _getMockStops(String city) {
-    if (city == 'Астана') {
-      return [
-        RouteStop(id: '1', name: 'Байтерек', lat: 51.1282, lng: 71.4305, order: 0),
-        RouteStop(id: '2', name: 'Хан Шатыр', lat: 51.1472, lng: 71.4457, order: 1),
-        RouteStop(id: '3', name: 'Национальный музей', lat: 51.1255, lng: 71.4289, order: 2),
-        RouteStop(id: '4', name: 'Парк Жастар', lat: 51.1565, lng: 71.4352, order: 3),
-      ];
+
+  Future<RouteData?> fetchRouteByUserId(String userId) async {
+    final url = Uri.parse('$baseUrl/v1/routes/$userId');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      return RouteData.fromJson(json.decode(response.body));
+    } else if (response.statusCode == 404) {
+      return null;
     } else {
-      return [
-        RouteStop(id: '1', name: 'Кок-Тобе', lat: 43.2421, lng: 76.9485, order: 0),
-        RouteStop(id: '2', name: 'Медеу', lat: 43.1547, lng: 77.0599, order: 1),
-        RouteStop(id: '3', name: 'Зеленый Базар', lat: 43.2613, lng: 76.9402, order: 2),
-        RouteStop(id: '4', name: 'Парк Горького', lat: 43.2463, lng: 76.9465, order: 3),
-      ];
+      throw Exception('Fetch route failed: ${response.statusCode}');
+    }
+  }
+
+  Future<RouteData> createAndWaitForRoute({
+    required String userId,
+    required String city,
+    required String category,
+    required String duration,
+    required double budget,
+    int maxAttempts = 15,
+    Duration delay = const Duration(seconds: 2),
+  }) async {
+    await createPreferences(
+      userId: userId,
+      city: city,
+      category: category,
+      duration: duration,
+      budget: budget,
+    );
+    for (int i = 0; i < maxAttempts; i++) {
+      await Future.delayed(delay);
+      final route = await fetchRouteByUserId(userId);
+      if (route != null) return route;
+    }
+    throw Exception('Route generation timeout');
+  }
+
+  // ---------- Фидбэк ----------
+  Future<void> sendFeedback({
+    required String userId,
+    required String routeId,
+    required double rating,
+    required String comment,
+  }) async {
+    final url = Uri.parse('$baseUrl/v1/feedback');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'user_id': userId,
+        'route_id': routeId,
+        'rating': rating,
+        'comment': comment,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Feedback failed: ${response.statusCode}');
+    }
+  }
+
+  // ---------- Админка ----------
+  Future<void> addAdmin(String userId) async {
+    final url = Uri.parse('$baseUrl/v1/admin');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'user_id': userId}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Add admin failed: ${response.statusCode}');
+    }
+  }
+
+  Future<bool> isAdmin(String userId) async {
+    final url = Uri.parse('$baseUrl/v1/admin/check/$userId');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['is_admin'] == true;
+    }
+    return false;
+  }
+
+  Future<Map<String, dynamic>> getAdminStats() async {
+    final url = Uri.parse('$baseUrl/v1/admin/stats');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Stats failed: ${response.statusCode}');
+    }
+  }
+
+  Future<List<dynamic>> getAllFeedbacks() async {
+    final url = Uri.parse('$baseUrl/v1/admin/feedbacks');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data is List ? data : [];
+    } else {
+      throw Exception('Feedbacks list failed: ${response.statusCode}');
+    }
+  }
+
+  Future<List<dynamic>> getAllNotifications() async {
+    final url = Uri.parse('$baseUrl/v1/admin/notifications');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data is List ? data : [];
+    } else {
+      throw Exception('Notifications list failed: ${response.statusCode}');
     }
   }
 }
