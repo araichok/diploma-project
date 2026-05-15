@@ -252,6 +252,16 @@ class ApiService {
 
   // ── History ───────────────────────────────────────────────────────────────
 
+  Future<List<Map<String, dynamic>>> getHistory(String userId) async {
+    final res = await http.get(
+      Uri.parse('$_baseUrl/history/$userId'),
+      headers: _authHeaders,
+    ).timeout(const Duration(seconds: 10));
+    if (res.statusCode != 200) return [];
+    final body = json.decode(res.body) as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(body['histories'] ?? []);
+  }
+
   Future<void> createHistory({
     required String userId,
     required String routeId,

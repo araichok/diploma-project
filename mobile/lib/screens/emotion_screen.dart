@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
 import '../screens/admin_panel_screen.dart';
+import '../screens/history_screen.dart';
 import '../widgets/custom_logo.dart';
 
 class EmotionScreen extends StatelessWidget {
@@ -69,9 +70,31 @@ class EmotionScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Hello, ${auth.currentUser?.name ?? 'Traveler'}!',
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Hello, ${auth.currentUser?.name ?? 'Traveler'}!',
+                    style: const TextStyle(
+                        fontSize: 26, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const HistoryScreen()),
+                  ),
+                  icon: const Icon(Icons.history, size: 18),
+                  label: const Text('My Routes'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey[700],
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             const Text(
