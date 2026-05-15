@@ -62,10 +62,9 @@ func SetupRouter(
 	)
 
 	// history
-	protected.GET(
-		"/history/:user_id",
-		historyHandler.GetUserHistory,
-	)
+	protected.GET("/history/:user_id", historyHandler.GetUserHistory)
+	protected.POST("/history", historyHandler.CreateHistory)
+	protected.PUT("/history/status", historyHandler.UpdateHistoryStatus)
 
 	// feedback
 	protected.POST(
@@ -98,6 +97,16 @@ func SetupRouter(
 	protected.GET(
 		"/admin/stats",
 		adminHandler.GetStats,
+	)
+
+	protected.GET(
+		"/admin/feedbacks",
+		adminHandler.GetAllFeedbacks,
+	)
+
+	protected.GET(
+		"/admin/notifications",
+		adminHandler.GetAllNotifications,
 	)
 
 	return r

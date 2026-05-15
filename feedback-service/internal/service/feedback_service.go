@@ -8,6 +8,7 @@ import (
 	"feedback-service/internal/repository"
 	"feedback-service/models"
 	pb "feedback-service/proto"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // FeedbackService handles business logic for feedback
@@ -91,6 +92,27 @@ func (s *FeedbackService) GetFeedbackByRoute(ctx context.Context, req *pb.GetFee
 		})
 	}
 
+	return &pb.FeedbackListResponse{Feedbacks: result}, nil
+}
+
+// GetAllFeedbacks returns all feedbacks via gRPC (admin use)
+func (s *FeedbackService) GetAllFeedbacks(ctx context.Context, _ *emptypb.Empty) (*pb.FeedbackListResponse, error) {
+	feedbacks, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	var result []*pb.Feedback
+	for _, f := range feedbacks {
+		result = append(result, &pb.Feedback{
+			FeedbackId: f.ID,
+			UserId:     f.UserID,
+			RouteId:    f.RouteID,
+			LocationId: f.LocationID,
+			Rating:     int32(f.Rating),
+			Comment:    f.Comment,
+			CreatedAt:  f.CreatedAt.String(),
+		})
+	}
 	return &pb.FeedbackListResponse{Feedbacks: result}, nil
 }
 

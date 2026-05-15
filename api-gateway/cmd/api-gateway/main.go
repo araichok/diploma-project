@@ -55,7 +55,7 @@ func main() {
 	historyHandler := handler.NewHistoryHandler(historyClient)
 	feedbackHandler := handler.NewFeedbackHandler(feedbackClient)
 	notificationHandler := handler.NewNotificationHandler(notificationClient)
-	adminHandler := handler.NewAdminHandler(adminClient)
+	adminHandler := handler.NewAdminHandler(adminClient, feedbackClient, notificationClient, userClient, routeClient)
 
 	r := router.SetupRouter(
 		userHandler,

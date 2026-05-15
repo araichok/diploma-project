@@ -11,6 +11,8 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -21,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	RouteService_GetRouteByID_FullMethodName  = "/route.RouteService/GetRouteByID"
 	RouteService_GetUserRoutes_FullMethodName = "/route.RouteService/GetUserRoutes"
+	RouteService_CountRoutes_FullMethodName   = "/route.RouteService/CountRoutes"
 )
 
 // RouteServiceClient is the client API for RouteService service.
@@ -29,6 +32,7 @@ const (
 type RouteServiceClient interface {
 	GetRouteByID(ctx context.Context, in *GetRouteByIDRequest, opts ...grpc.CallOption) (*RouteResponse, error)
 	GetUserRoutes(ctx context.Context, in *GetUserRoutesRequest, opts ...grpc.CallOption) (*GetUserRoutesResponse, error)
+	CountRoutes(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
 }
 
 type routeServiceClient struct {
@@ -53,6 +57,16 @@ func (c *routeServiceClient) GetUserRoutes(ctx context.Context, in *GetUserRoute
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUserRoutesResponse)
 	err := c.cc.Invoke(ctx, RouteService_GetUserRoutes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routeServiceClient) CountRoutes(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(wrapperspb.Int32Value)
+	err := c.cc.Invoke(ctx, RouteService_CountRoutes_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}

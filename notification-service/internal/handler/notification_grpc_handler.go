@@ -6,6 +6,7 @@ import (
 
 	"notification-service/internal/service"
 	pb "notification-service/proto"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NotificationGrpcServer implements the gRPC server
@@ -67,6 +68,26 @@ func (s *NotificationGrpcServer) MarkAsRead(ctx context.Context, req *pb.MarkAsR
 		return nil, err
 	}
 	return &pb.NotificationResponse{}, nil
+}
+
+// GetAllNotifications handles gRPC GetAllNotifications request (admin use)
+func (s *NotificationGrpcServer) GetAllNotifications(ctx context.Context, _ *emptypb.Empty) (*pb.NotificationListResponse, error) {
+	notifications, err := s.service.GetAllNotifications()
+	if err != nil {
+		return nil, err
+	}
+	var result []*pb.Notification
+	for _, n := range notifications {
+		result = append(result, &pb.Notification{
+			Id:        n.ID,
+			UserId:    n.UserID,
+			Message:   n.Message,
+			Type:      n.Type,
+			IsRead:    n.IsRead,
+			CreatedAt: n.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	return &pb.NotificationListResponse{Notifications: result}, nil
 }
 
 // GetUnreadCount handles gRPC GetUnreadCount request

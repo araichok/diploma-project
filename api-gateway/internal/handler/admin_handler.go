@@ -4,17 +4,36 @@ import (
 	"net/http"
 
 	adminpb "api-gateway/proto/adminpb"
+	feedbackpb "api-gateway/proto/feedbackpb"
+	notificationpb "api-gateway/proto/notificationpb"
+	routepb "api-gateway/proto/routepb"
+	userpb "api-gateway/proto/userpb"
 
 	"github.com/gin-gonic/gin"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AdminHandler struct {
-	client adminpb.AdminServiceClient
+	client         adminpb.AdminServiceClient
+	feedbackClient feedbackpb.FeedbackServiceClient
+	notifClient    notificationpb.NotificationServiceClient
+	userClient     userpb.UserServiceClient
+	routeClient    routepb.RouteServiceClient
 }
 
-func NewAdminHandler(client adminpb.AdminServiceClient) *AdminHandler {
+func NewAdminHandler(
+	client adminpb.AdminServiceClient,
+	feedbackClient feedbackpb.FeedbackServiceClient,
+	notifClient notificationpb.NotificationServiceClient,
+	userClient userpb.UserServiceClient,
+	routeClient routepb.RouteServiceClient,
+) *AdminHandler {
 	return &AdminHandler{
-		client: client,
+		client:         client,
+		feedbackClient: feedbackClient,
+		notifClient:    notifClient,
+		userClient:     userClient,
+		routeClient:    routeClient,
 	}
 }
 
@@ -60,17 +79,45 @@ func (h *AdminHandler) IsAdmin(c *gin.Context) {
 }
 
 func (h *AdminHandler) GetStats(c *gin.Context) {
-	res, err := h.client.GetStats(
-		c,
-		&adminpb.GetStatsRequest{},
-	)
+	empty := &emptypb.Empty{}
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
+	var userCount, routeCount, feedbackCount, notifCount int32
+
+	if res, err := h.userClient.CountUsers(c, empty); err == nil && res != nil {
+		userCount = res.Value
+	}
+	if res, err := h.routeClient.CountRoutes(c, empty); err == nil && res != nil {
+		routeCount = res.Value
+	}
+	if res, err := h.feedbackClient.GetAllFeedbacks(c, empty); err == nil && res != nil {
+		feedbackCount = int32(len(res.Feedbacks))
+	}
+	if res, err := h.notifClient.GetAllNotifications(c, empty); err == nil && res != nil {
+		notifCount = int32(len(res.Notifications))
 	}
 
+	c.JSON(http.StatusOK, gin.H{
+		"total_users":         userCount,
+		"total_routes":        routeCount,
+		"total_feedbacks":     feedbackCount,
+		"total_notifications": notifCount,
+	})
+}
+
+func (h *AdminHandler) GetAllFeedbacks(c *gin.Context) {
+	res, err := h.feedbackClient.GetAllFeedbacks(c, &emptypb.Empty{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *AdminHandler) GetAllNotifications(c *gin.Context) {
+	res, err := h.notifClient.GetAllNotifications(c, &emptypb.Empty{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, res)
 }

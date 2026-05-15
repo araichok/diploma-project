@@ -11,6 +11,8 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -27,6 +29,7 @@ const (
 	UserService_RefreshToken_FullMethodName   = "/user.UserService/RefreshToken"
 	UserService_Logout_FullMethodName         = "/user.UserService/Logout"
 	UserService_ChangePassword_FullMethodName = "/user.UserService/ChangePassword"
+	UserService_CountUsers_FullMethodName     = "/user.UserService/CountUsers"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -41,6 +44,7 @@ type UserServiceClient interface {
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
+	CountUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
 }
 
 type userServiceClient struct {
@@ -131,6 +135,16 @@ func (c *userServiceClient) ChangePassword(ctx context.Context, in *ChangePasswo
 	return out, nil
 }
 
+func (c *userServiceClient) CountUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(wrapperspb.Int32Value)
+	err := c.cc.Invoke(ctx, UserService_CountUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -143,6 +157,7 @@ type UserServiceServer interface {
 	RefreshToken(context.Context, *RefreshTokenRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
+	CountUsers(context.Context, *emptypb.Empty) (*wrapperspb.Int32Value, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -176,6 +191,9 @@ func (UnimplementedUserServiceServer) Logout(context.Context, *LogoutRequest) (*
 }
 func (UnimplementedUserServiceServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedUserServiceServer) CountUsers(context.Context, *emptypb.Empty) (*wrapperspb.Int32Value, error) {
+	return nil, status.Error(codes.Unimplemented, "method CountUsers not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}

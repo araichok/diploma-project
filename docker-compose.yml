@@ -9,13 +9,22 @@ services:
       USER_SERVICE_ADDR: user-service:50051
       PREFERENCE_SERVICE_ADDR: preference-service:50052
       ROUTE_SERVICE_ADDR: route-generation-service:50053
+      HISTORY_SERVICE_ADDR: route-history-service:50056
+      FEEDBACK_SERVICE_ADDR: feedback-service:50055
+      NOTIFICATION_SERVICE_ADDR: notification-service:50057
+      ADMIN_SERVICE_ADDR: admin-service:50058
       JWT_SECRET: my_super_secret_key
     depends_on:
       - user-service
       - preference-service
       - route-generation-service
-    networks:
-      - diploma-network
+      - route-history-service
+      - feedback-service
+      - notification-service
+      - admin-service
+    restart: on-failure
+
+  # ─── Core services ────────────────────────────────────────────────────────────
 
   user-service:
     build: ./user-service
@@ -34,11 +43,13 @@ services:
       REDIS_PORT: 6379
       NATS_URL: nats://nats:4222
     depends_on:
-      - user-postgres
-      - user-redis
-      - nats
-    networks:
-      - diploma-network
+      user-postgres:
+        condition: service_healthy
+      user-redis:
+        condition: service_started
+      nats:
+        condition: service_started
+    restart: on-failure
 
   preference-service:
     build: ./preference-service
@@ -56,11 +67,13 @@ services:
       REDIS_HOST: preference-redis
       REDIS_PORT: 6379
     depends_on:
-      - preference-postgres
-      - preference-redis
-      - nats
-    networks:
-      - diploma-network
+      preference-postgres:
+        condition: service_healthy
+      preference-redis:
+        condition: service_started
+      nats:
+        condition: service_started
+    restart: on-failure
 
   route-generation-service:
     build: ./route-generation-service
@@ -78,11 +91,13 @@ services:
       LOCATION_SERVICE_ADDR: location-service:50054
       ROUTE_HISTORY_SERVICE_ADDR: route-history-service:50056
     depends_on:
-      - route-postgres
-      - nats
-      - location-service
-    networks:
-      - diploma-network
+      route-postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      location-service:
+        condition: service_started
+    restart: on-failure
 
   location-service:
     build: ./location-service
@@ -97,9 +112,92 @@ services:
       DB_PASSWORD: postgres
       DB_NAME: location_db
     depends_on:
-      - location-postgres
-    networks:
-      - diploma-network
+      location-postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  # ─── Previously missing services ──────────────────────────────────────────────
+
+  feedback-service:
+    build: ./feedback-service
+    container_name: feedback-service
+    ports:
+      - "50055:50055"
+    environment:
+      PORT: 50055
+      DB_HOST: feedback-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: feedback_db
+      NOTIFICATION_SERVICE_ADDR: notification-service:50057
+      ROUTE_HISTORY_SERVICE_ADDR: route-history-service:50056
+    depends_on:
+      feedback-postgres:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+    restart: on-failure
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "50057:50057"
+    environment:
+      PORT: 50057
+      DB_HOST: notification-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: notification_db
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  route-history-service:
+    build: ./route-history-service
+    container_name: route-history-service
+    ports:
+      - "50056:50056"
+    environment:
+      PORT: 50056
+      DB_HOST: route-history-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: route_history_db
+      NOTIFICATION_SERVICE_ADDR: notification-service:50057
+      ROUTE_GENERATION_SERVICE_ADDR: route-generation-service:50053
+    depends_on:
+      route-history-postgres:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+    restart: on-failure
+
+  admin-service:
+    build: ./admin-service
+    container_name: admin-service
+    ports:
+      - "50058:50058"
+    environment:
+      PORT: 50058
+      DB_HOST: admin-postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: admin_db
+      USER_SERVICE_ADDR: user-service:50051
+    depends_on:
+      admin-postgres:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+    restart: on-failure
+
+  # ─── Databases ────────────────────────────────────────────────────────────────
 
   user-postgres:
     image: postgres:16
@@ -113,8 +211,11 @@ services:
     volumes:
       - user_postgres_data:/var/lib/postgresql/data
       - ./user-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - diploma-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tourism_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   preference-postgres:
     image: postgres:16
@@ -128,11 +229,14 @@ services:
     volumes:
       - preference_postgres_data:/var/lib/postgresql/data
       - ./preference-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - diploma-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d preference_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   route-postgres:
-    image: postgres:15
+    image: postgres:16
     container_name: route-postgres
     environment:
       POSTGRES_USER: postgres
@@ -141,9 +245,13 @@ services:
     ports:
       - "5435:5432"
     volumes:
+      - route_postgres_data:/var/lib/postgresql/data
       - ./route-generation-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - diploma-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d route_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   location-postgres:
     image: postgres:16
@@ -157,8 +265,81 @@ services:
     volumes:
       - location_postgres_data:/var/lib/postgresql/data
       - ./location-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - diploma-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d location_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  feedback-postgres:
+    image: postgres:16
+    container_name: feedback-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: feedback_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - feedback_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d feedback_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  notification-postgres:
+    image: postgres:16
+    container_name: notification-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification_db
+    ports:
+      - "5438:5432"
+    volumes:
+      - notification_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notification_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  route-history-postgres:
+    image: postgres:16
+    container_name: route-history-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: route_history_db
+    ports:
+      - "5439:5432"
+    volumes:
+      - route_history_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d route_history_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  admin-postgres:
+    image: postgres:16
+    container_name: admin-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: admin_db
+    ports:
+      - "5440:5432"
+    volumes:
+      - admin_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d admin_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── Infrastructure ───────────────────────────────────────────────────────────
 
   user-redis:
     image: redis:7
@@ -188,10 +369,9 @@ services:
 volumes:
   user_postgres_data:
   preference_postgres_data:
+  route_postgres_data:
   location_postgres_data:
-
-
-
-networks:
-  diploma-network:
-    external: true
+  feedback_postgres_data:
+  notification_postgres_data:
+  route_history_postgres_data:
+  admin_postgres_data:

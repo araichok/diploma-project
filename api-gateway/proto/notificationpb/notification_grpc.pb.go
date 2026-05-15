@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,6 +24,7 @@ const (
 	NotificationService_GetUserNotifications_FullMethodName = "/notification.NotificationService/GetUserNotifications"
 	NotificationService_MarkAsRead_FullMethodName           = "/notification.NotificationService/MarkAsRead"
 	NotificationService_GetUnreadCount_FullMethodName       = "/notification.NotificationService/GetUnreadCount"
+	NotificationService_GetAllNotifications_FullMethodName  = "/notification.NotificationService/GetAllNotifications"
 )
 
 // NotificationServiceClient is the client API for NotificationService service.
@@ -33,6 +35,7 @@ type NotificationServiceClient interface {
 	GetUserNotifications(ctx context.Context, in *GetUserNotificationsRequest, opts ...grpc.CallOption) (*NotificationListResponse, error)
 	MarkAsRead(ctx context.Context, in *MarkAsReadRequest, opts ...grpc.CallOption) (*NotificationResponse, error)
 	GetUnreadCount(ctx context.Context, in *GetUnreadCountRequest, opts ...grpc.CallOption) (*UnreadCountResponse, error)
+	GetAllNotifications(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NotificationListResponse, error)
 }
 
 type notificationServiceClient struct {
@@ -83,6 +86,16 @@ func (c *notificationServiceClient) GetUnreadCount(ctx context.Context, in *GetU
 	return out, nil
 }
 
+func (c *notificationServiceClient) GetAllNotifications(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*NotificationListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(NotificationListResponse)
+	err := c.cc.Invoke(ctx, NotificationService_GetAllNotifications_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationServiceServer is the server API for NotificationService service.
 // All implementations must embed UnimplementedNotificationServiceServer
 // for forward compatibility.
@@ -91,6 +104,7 @@ type NotificationServiceServer interface {
 	GetUserNotifications(context.Context, *GetUserNotificationsRequest) (*NotificationListResponse, error)
 	MarkAsRead(context.Context, *MarkAsReadRequest) (*NotificationResponse, error)
 	GetUnreadCount(context.Context, *GetUnreadCountRequest) (*UnreadCountResponse, error)
+	GetAllNotifications(context.Context, *emptypb.Empty) (*NotificationListResponse, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
@@ -112,6 +126,9 @@ func (UnimplementedNotificationServiceServer) MarkAsRead(context.Context, *MarkA
 }
 func (UnimplementedNotificationServiceServer) GetUnreadCount(context.Context, *GetUnreadCountRequest) (*UnreadCountResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUnreadCount not implemented")
+}
+func (UnimplementedNotificationServiceServer) GetAllNotifications(context.Context, *emptypb.Empty) (*NotificationListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAllNotifications not implemented")
 }
 func (UnimplementedNotificationServiceServer) mustEmbedUnimplementedNotificationServiceServer() {}
 func (UnimplementedNotificationServiceServer) testEmbeddedByValue()                             {}

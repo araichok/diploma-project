@@ -78,6 +78,26 @@ func (r *NotificationRepository) GetUnreadCount(userID string) (int, error) {
 	return count, err
 }
 
+func (r *NotificationRepository) GetAll() ([]model.Notification, error) {
+	rows, err := r.db.Query(
+		`SELECT id, user_id, message, type, is_read, created_at FROM notifications ORDER BY created_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var notifications []model.Notification
+	for rows.Next() {
+		var n model.Notification
+		if err := rows.Scan(&n.ID, &n.UserID, &n.Message, &n.Type, &n.IsRead, &n.CreatedAt); err != nil {
+			continue
+		}
+		notifications = append(notifications, n)
+	}
+	return notifications, nil
+}
+
 func (r *NotificationRepository) Delete(id string) error {
 	_, err := r.db.Exec(`DELETE FROM notifications WHERE id = $1`, id)
 	return err

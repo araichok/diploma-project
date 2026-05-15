@@ -32,6 +32,10 @@ func (s *NotificationService) GetUserNotifications(userID string) ([]model.Notif
 	return s.repo.GetByUserID(userID)
 }
 
+func (s *NotificationService) GetAllNotifications() ([]model.Notification, error) {
+	return s.repo.GetAll()
+}
+
 func (s *NotificationService) MarkAsRead(id string) error {
 	return s.repo.MarkAsRead(id)
 }

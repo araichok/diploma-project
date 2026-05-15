@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,6 +23,7 @@ const (
 	FeedbackService_CreateFeedback_FullMethodName     = "/feedback.FeedbackService/CreateFeedback"
 	FeedbackService_GetFeedbackByRoute_FullMethodName = "/feedback.FeedbackService/GetFeedbackByRoute"
 	FeedbackService_GetFeedbackByUser_FullMethodName  = "/feedback.FeedbackService/GetFeedbackByUser"
+	FeedbackService_GetAllFeedbacks_FullMethodName    = "/feedback.FeedbackService/GetAllFeedbacks"
 )
 
 // FeedbackServiceClient is the client API for FeedbackService service.
@@ -31,6 +33,7 @@ type FeedbackServiceClient interface {
 	CreateFeedback(ctx context.Context, in *CreateFeedbackRequest, opts ...grpc.CallOption) (*FeedbackResponse, error)
 	GetFeedbackByRoute(ctx context.Context, in *GetFeedbackByRouteRequest, opts ...grpc.CallOption) (*FeedbackListResponse, error)
 	GetFeedbackByUser(ctx context.Context, in *GetFeedbackByUserRequest, opts ...grpc.CallOption) (*FeedbackListResponse, error)
+	GetAllFeedbacks(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*FeedbackListResponse, error)
 }
 
 type feedbackServiceClient struct {
@@ -71,6 +74,16 @@ func (c *feedbackServiceClient) GetFeedbackByUser(ctx context.Context, in *GetFe
 	return out, nil
 }
 
+func (c *feedbackServiceClient) GetAllFeedbacks(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*FeedbackListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FeedbackListResponse)
+	err := c.cc.Invoke(ctx, FeedbackService_GetAllFeedbacks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FeedbackServiceServer is the server API for FeedbackService service.
 // All implementations must embed UnimplementedFeedbackServiceServer
 // for forward compatibility.
@@ -78,6 +91,7 @@ type FeedbackServiceServer interface {
 	CreateFeedback(context.Context, *CreateFeedbackRequest) (*FeedbackResponse, error)
 	GetFeedbackByRoute(context.Context, *GetFeedbackByRouteRequest) (*FeedbackListResponse, error)
 	GetFeedbackByUser(context.Context, *GetFeedbackByUserRequest) (*FeedbackListResponse, error)
+	GetAllFeedbacks(context.Context, *emptypb.Empty) (*FeedbackListResponse, error)
 	mustEmbedUnimplementedFeedbackServiceServer()
 }
 
@@ -96,6 +110,9 @@ func (UnimplementedFeedbackServiceServer) GetFeedbackByRoute(context.Context, *G
 }
 func (UnimplementedFeedbackServiceServer) GetFeedbackByUser(context.Context, *GetFeedbackByUserRequest) (*FeedbackListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetFeedbackByUser not implemented")
+}
+func (UnimplementedFeedbackServiceServer) GetAllFeedbacks(context.Context, *emptypb.Empty) (*FeedbackListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAllFeedbacks not implemented")
 }
 func (UnimplementedFeedbackServiceServer) mustEmbedUnimplementedFeedbackServiceServer() {}
 func (UnimplementedFeedbackServiceServer) testEmbeddedByValue()                         {}
