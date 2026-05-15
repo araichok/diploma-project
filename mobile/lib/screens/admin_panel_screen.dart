@@ -1,32 +1,148 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/feedback_provider.dart';
-import '../providers/notification_provider.dart';
-import '../models/feedback.dart';
+import '../services/api_service.dart';
 
-class AdminPanelScreen extends StatelessWidget {
+class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
+
+  @override
+  State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+}
+
+class _AdminPanelScreenState extends State<AdminPanelScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final ApiService _api = ApiService();
+
+  // Статистика
+  Map<String, dynamic> _stats = {};
+  bool _statsLoading = true;
+  String? _statsError;
+
+  // Отзывы
+  List<dynamic> _feedbacks = [];
+  bool _feedbacksLoading = true;
+  String? _feedbacksError;
+
+  // Уведомления
+  List<dynamic> _notifications = [];
+  bool _notificationsLoading = true;
+  String? _notificationsError;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadAllData();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAllData() async {
+    await Future.wait([
+      _loadStats(),
+      _loadFeedbacks(),
+      _loadNotifications(),
+    ]);
+  }
+
+  Future<void> _loadStats() async {
+    setState(() => _statsLoading = true);
+    try {
+      final stats = await _api.getAdminStats();
+      setState(() {
+        _stats = stats;
+        _statsError = null;
+      });
+    } catch (e) {
+      setState(() => _statsError = e.toString());
+    } finally {
+      setState(() => _statsLoading = false);
+    }
+  }
+
+  Future<void> _loadFeedbacks() async {
+    setState(() => _feedbacksLoading = true);
+    try {
+      final feedbacks = await _api.getAllFeedbacks();
+      setState(() {
+        _feedbacks = feedbacks;
+        _feedbacksError = null;
+      });
+    } catch (e) {
+      setState(() => _feedbacksError = e.toString());
+    } finally {
+      setState(() => _feedbacksLoading = false);
+    }
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() => _notificationsLoading = true);
+    try {
+      final notifications = await _api.getAllNotifications();
+      setState(() {
+        _notifications = notifications;
+        _notificationsError = null;
+      });
+    } catch (e) {
+      setState(() => _notificationsError = e.toString());
+    } finally {
+      setState(() => _notificationsLoading = false);
+    }
+  }
+
+  void _showAddAdminDialog() {
+    final TextEditingController userIdController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Add Admin'),
+        content: TextField(
+          controller: userIdController,
+          decoration: const InputDecoration(hintText: 'User ID'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final userId = userIdController.text.trim();
+              if (userId.isEmpty) return;
+              try {
+                await _api.addAdmin(userId);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Admin added'), backgroundColor: Colors.green),
+                );
+                _loadAllData(); // обновить статистику
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final feedbackProvider = Provider.of<FeedbackProvider>(context);
-    final notificationProvider = Provider.of<NotificationProvider>(context);
-
     if (!authProvider.isAdmin) {
       return Scaffold(
         appBar: AppBar(title: const Text('Access Denied')),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.lock, size: 80, color: Colors.red),
-              SizedBox(height: 16),
-              Text('You don\'t have admin access'),
-            ],
-          ),
-        ),
+        body: const Center(child: Text('You are not an admin')),
       );
     }
 
@@ -36,6 +152,10 @@ class AdminPanelScreen extends StatelessWidget {
         backgroundColor: Colors.red.shade700,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadAllData,
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
               authProvider.logout();
@@ -43,64 +163,125 @@ class AdminPanelScreen extends StatelessWidget {
             },
           ),
         ],
-      ),
-      body: DefaultTabController(
-        length: 3,
-        child: Column(
-          children: [
-            Container(
-              color: Colors.red.shade700,
-              child: const TabBar(
-                tabs: [
-                  Tab(icon: Icon(Icons.feedback), text: 'Feedbacks'),
-                  Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
-                  Tab(icon: Icon(Icons.people), text: 'Stats'),
-                ],
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _FeedbacksTab(feedbacks: feedbackProvider.feedbacks),
-                  _NotificationsTab(notificationProvider: notificationProvider),
-                  _StatsTab(feedbackProvider: feedbackProvider),
-                ],
-              ),
-            ),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.analytics), text: 'Stats'),
+            Tab(icon: Icon(Icons.feedback), text: 'Feedbacks'),
+            Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
           ],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _StatsTab(stats: _stats, isLoading: _statsLoading, error: _statsError),
+          _FeedbacksTab(
+            feedbacks: _feedbacks,
+            isLoading: _feedbacksLoading,
+            error: _feedbacksError,
+            onAddAdmin: _showAddAdminDialog,
+          ),
+          _NotificationsTab(
+            notifications: _notifications,
+            isLoading: _notificationsLoading,
+            error: _notificationsError,
+          ),
+        ],
       ),
     );
   }
 }
 
-class _FeedbacksTab extends StatelessWidget {
-  final List<RouteFeedback> feedbacks;
+// ---------- Вкладки ----------
+class _StatsTab extends StatelessWidget {
+  final Map<String, dynamic> stats;
+  final bool isLoading;
+  final String? error;
 
-  const _FeedbacksTab({required this.feedbacks});
+  const _StatsTab({required this.stats, required this.isLoading, this.error});
 
   @override
   Widget build(BuildContext context) {
-    if (feedbacks.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.feedback_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No feedbacks yet', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
-      );
-    }
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (error != null) return Center(child: Text('Error: $error'));
 
+    final items = [
+      ('Users', stats['total_users'] ?? 0, Icons.people),
+      ('Routes', stats['total_routes'] ?? 0, Icons.route),
+      ('Feedbacks', stats['total_feedbacks'] ?? 0, Icons.rate_review),
+      ('Notifications', stats['total_notifications'] ?? 0, Icons.notifications),
+    ];
+
+    return GridView.count(
+      padding: const EdgeInsets.all(16),
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      children: items.map((item) {
+        return Card(
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(item.$3, size: 48, color: Colors.red.shade700),
+                const SizedBox(height: 12),
+                Text(item.$2.toString(), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(item.$1, style: const TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _FeedbacksTab extends StatelessWidget {
+  final List<dynamic> feedbacks;
+  final bool isLoading;
+  final String? error;
+  final VoidCallback onAddAdmin;
+
+  const _FeedbacksTab({
+    required this.feedbacks,
+    required this.isLoading,
+    this.error,
+    required this.onAddAdmin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton.icon(
+            onPressed: onAddAdmin,
+            icon: const Icon(Icons.admin_panel_settings),
+            label: const Text('Make Admin'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700),
+          ),
+        ),
+        Expanded(child: _buildList()),
+      ],
+    );
+  }
+
+  Widget _buildList() {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (error != null) return Center(child: Text('Error: $error'));
+    if (feedbacks.isEmpty) return const Center(child: Text('No feedbacks yet'));
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: feedbacks.length,
-      itemBuilder: (context, index) {
-        final f = feedbacks[index];
+      itemBuilder: (context, i) {
+        final f = feedbacks[i];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: Padding(
@@ -110,29 +291,21 @@ class _FeedbacksTab extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      child: Text(f.userName[0].toUpperCase()),
-                    ),
+                    CircleAvatar(child: Text(f['userName'][0].toUpperCase())),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            f.userName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            f.routeName,
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                          ),
+                          Text(f['userName'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(f['routeName'], style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                         ],
                       ),
                     ),
                     Row(
-                      children: List.generate(5, (i) {
+                      children: List.generate(5, (star) {
                         return Icon(
-                          i < f.rating.toInt() ? Icons.star : Icons.star_border,
+                          star < (f['rating'] as int) ? Icons.star : Icons.star_border,
                           size: 16,
                           color: Colors.amber,
                         );
@@ -141,10 +314,10 @@ class _FeedbacksTab extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(f.comment),
+                Text(f['comment']),
                 const SizedBox(height: 8),
                 Text(
-                  _formatDate(f.createdAt),
+                  _formatDate(DateTime.parse(f['createdAt'])),
                   style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
                 ),
               ],
@@ -155,150 +328,45 @@ class _FeedbacksTab extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute}';
-  }
+  String _formatDate(DateTime date) => '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute}';
 }
 
 class _NotificationsTab extends StatelessWidget {
-  final NotificationProvider notificationProvider;
+  final List<dynamic> notifications;
+  final bool isLoading;
+  final String? error;
 
-  const _NotificationsTab({required this.notificationProvider});
+  const _NotificationsTab({required this.notifications, required this.isLoading, this.error});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (notificationProvider.notifications.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton.icon(
-              onPressed: () => notificationProvider.markAllAsRead(),
-              icon: const Icon(Icons.done_all),
-              label: const Text('Mark All as Read'),
-            ),
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (error != null) return Center(child: Text('Error: $error'));
+    if (notifications.isEmpty) return const Center(child: Text('No notifications'));
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: notifications.length,
+      itemBuilder: (context, i) {
+        final n = notifications[i];
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: n['isRead'] ? Colors.grey.shade200 : Colors.red.shade100,
+            child: Icon(Icons.notifications, color: n['isRead'] ? Colors.grey : Colors.red),
           ),
-        Expanded(
-          child: notificationProvider.notifications.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.notifications_none, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text('No notifications', style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: notificationProvider.notifications.length,
-                  itemBuilder: (context, index) {
-                    final n = notificationProvider.notifications[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: n.isRead ? Colors.grey.shade200 : Colors.red.shade100,
-                        child: Icon(Icons.notifications, color: n.isRead ? Colors.grey : Colors.red),
-                      ),
-                      title: Text(n.title, style: TextStyle(fontWeight: n.isRead ? FontWeight.normal : FontWeight.bold)),
-                      subtitle: Text(n.message),
-                      trailing: Text(_formatTime(n.createdAt), style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                      onTap: () => notificationProvider.markAsRead(n.id),
-                    );
-                  },
-                ),
-        ),
-      ],
+          title: Text(n['title'], style: TextStyle(fontWeight: n['isRead'] ? FontWeight.normal : FontWeight.bold)),
+          subtitle: Text(n['message']),
+          trailing: Text(_formatTime(DateTime.parse(n['createdAt'])), style: const TextStyle(fontSize: 12)),
+          onTap: () {
+            // можно пометить прочитанным, если есть API
+          },
+        );
+      },
     );
   }
 
   String _formatTime(DateTime time) {
     final diff = DateTime.now().difference(time);
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
-}
-
-class _StatsTab extends StatelessWidget {
-  final FeedbackProvider feedbackProvider;
-
-  const _StatsTab({required this.feedbackProvider});
-
-  @override
-  Widget build(BuildContext context) {
-    final allFeedbacks = feedbackProvider.feedbacks;
-    final avgRating = allFeedbacks.isEmpty 
-        ? 0 
-        : allFeedbacks.fold<double>(0, (s, f) => s + f.rating) / allFeedbacks.length;
-    
-    final ratingDistribution = [0, 0, 0, 0, 0];
-    for (var f in allFeedbacks) {
-      final index = f.rating.toInt() - 1;
-      if (index >= 0 && index < 5) ratingDistribution[index]++;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  const Text('Average Rating', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  Text(avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (i) {
-                      return Icon(
-                        i < avgRating.round() ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 24,
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('(${allFeedbacks.length} reviews)', style: const TextStyle(color: Colors.grey)),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Rating Distribution', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  ...List.generate(5, (i) {
-                    final percent = allFeedbacks.isEmpty ? 0 : (ratingDistribution[4 - i] / allFeedbacks.length) * 100;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          SizedBox(width: 40, child: Text('${5 - i} ★')),
-                          Expanded(
-                            child: LinearProgressIndicator(
-                              value: percent / 100,
-                              backgroundColor: Colors.grey.shade200,
-                              color: Colors.amber,
-                            ),
-                          ),
-                          SizedBox(width: 40, child: Text('${percent.toStringAsFixed(0)}%')),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    if (diff.inHours < 24) return '${diff.inHours} h ago';
+    return '${diff.inDays} d ago';
   }
 }
