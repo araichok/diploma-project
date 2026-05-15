@@ -44,8 +44,16 @@ func main() {
 
 	log.Println("connected to location-service:", cfg.LocationServiceAddr)
 
+	routeHistoryClient, err := client.NewRouteHistoryClient(cfg.RouteHistoryServiceAddr)
+	if err != nil {
+		log.Fatal("failed to connect route-history-service:", err)
+	}
+	defer routeHistoryClient.Close()
+
+	log.Println("connected to route-history-service:", cfg.RouteHistoryServiceAddr)
+
 	routeRepo := repository.NewRouteRepository(postgresDB)
-	routeService := service.NewRouteService(routeRepo, locationClient)
+	routeService := service.NewRouteService(routeRepo, locationClient, routeHistoryClient)
 
 	preferenceSubscriber := subscriber.NewPreferenceSubscriber(natsConn, routeService)
 	if err := preferenceSubscriber.SubscribePreferenceCreated(); err != nil {
