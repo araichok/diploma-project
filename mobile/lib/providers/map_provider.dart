@@ -11,7 +11,10 @@ class MapProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> loadRoute({
+  final ApiService _api = ApiService();
+
+  Future<void> generateRoute({
+    required String userId,
     required String city,
     required String category,
     required String duration,
@@ -22,8 +25,8 @@ class MapProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final apiService = ApiService();
-      _routeData = await apiService.fetchRoute(
+      _routeData = await _api.createAndWaitForRoute(
+        userId: userId,
         city: city,
         category: category,
         duration: duration,
@@ -31,7 +34,7 @@ class MapProvider extends ChangeNotifier {
       );
     } catch (e) {
       _error = e.toString();
-      print('Error in MapProvider: $e');
+      print('MapProvider error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -40,6 +43,7 @@ class MapProvider extends ChangeNotifier {
 
   void clearRoute() {
     _routeData = null;
+    _error = null;
     notifyListeners();
   }
 }
