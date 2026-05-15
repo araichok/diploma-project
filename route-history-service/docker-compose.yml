@@ -1,7 +1,7 @@
 services:
   route-history-service:
     build: .
-    container_name: route_history_service
+    container_name: route-history-service
     restart: on-failure
 
     ports:
