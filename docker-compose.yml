@@ -89,7 +89,6 @@ services:
       POSTGRES_DB: route_db
       NATS_URL: nats://nats:4222
       LOCATION_SERVICE_ADDR: location-service:50054
-      ROUTE_HISTORY_SERVICE_ADDR: route-history-service:50056
     depends_on:
       route-postgres:
         condition: service_healthy
@@ -346,25 +345,18 @@ services:
     container_name: user-redis
     ports:
       - "6379:6379"
-    networks:
-      - diploma-network
 
   preference-redis:
     image: redis:7
     container_name: preference-redis
     ports:
       - "6380:6379"
-    networks:
-      - diploma-network
 
   nats:
     image: nats:latest
     container_name: nats
     ports:
       - "4222:4222"
-    networks:
-      - diploma-network
-
 
 volumes:
   user_postgres_data:
