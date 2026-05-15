@@ -12,19 +12,22 @@ class MapProvider extends ChangeNotifier {
   RouteData? _routeData;
   List<RouteStop> _sortedStops = [];
   List<List<double>>? _routePath;
-  Uint8List? _mapImageBytes;
+  List<Uint8List?> _stopImages = [];
   bool _isLoading = false;
-  bool _isMapRefreshing = false;
   bool _isCompleted = false;
+  bool _isMapRefreshing = false;
   String? _error;
   int _currentStopIndex = 0;
   String _markerColor = '#0066FF';
   String _userId = '';
 
   RouteData? get routeData => _routeData;
-  Uint8List? get mapImageBytes => _mapImageBytes;
+  Uint8List? get mapImageBytes =>
+      _stopImages.isNotEmpty && _currentStopIndex < _stopImages.length
+          ? _stopImages[_currentStopIndex]
+          : null;
   bool get isLoading => _isLoading;
-  bool get isMapRefreshing => _isMapRefreshing;
+  bool get isMapRefreshing => false;
   bool get isCompleted => _isCompleted;
   String? get error => _error;
   int get currentStopIndex => _currentStopIndex;
@@ -47,7 +50,7 @@ class MapProvider extends ChangeNotifier {
     _isLoading = true;
     _isCompleted = false;
     _error = null;
-    _mapImageBytes = null;
+    _stopImages = [];
     _routeData = null;
     _sortedStops = [];
     _currentStopIndex = 0;
@@ -72,7 +75,16 @@ class MapProvider extends ChangeNotifier {
           _routePath = await _api.fetchRoutePath(_sortedStops);
         }
 
-        _mapImageBytes = await _fetchMapImageForStop(0);
+        // Fetch all stop images in parallel — navigation will be instant
+        _stopImages = await Future.wait<Uint8List?>(
+          List.generate(_sortedStops.length, (i) async {
+            try {
+              return await _fetchMapImageForStop(i);
+            } catch (_) {
+              return null;
+            }
+          }),
+        );
 
         // Record this route as planned in history (best-effort)
         try {
@@ -89,20 +101,8 @@ class MapProvider extends ChangeNotifier {
 
   Future<void> advanceStop() async {
     if (_routeData == null || isLastStop) return;
-
-    _isMapRefreshing = true;
+    _currentStopIndex++;
     notifyListeners();
-
-    try {
-      _currentStopIndex++;
-      _mapImageBytes = await _fetchMapImageForStop(_currentStopIndex);
-    } catch (_) {
-      // keep current image on failure
-      _currentStopIndex--;
-    } finally {
-      _isMapRefreshing = false;
-      notifyListeners();
-    }
   }
 
   Future<bool> completeRoute() async {
@@ -225,7 +225,7 @@ class MapProvider extends ChangeNotifier {
     _routeData = null;
     _sortedStops = [];
     _routePath = null;
-    _mapImageBytes = null;
+    _stopImages = [];
     _error = null;
     _currentStopIndex = 0;
     _isCompleted = false;
