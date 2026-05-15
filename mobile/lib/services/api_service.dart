@@ -246,9 +246,25 @@ class ApiService {
     throw Exception('Failed to load stats');
   }
 
-  // These endpoints are not yet in the backend router — return empty gracefully
-  Future<List<dynamic>> getAllFeedbacks() async => [];
-  Future<List<dynamic>> getAllNotifications() async => [];
+  Future<List<Map<String, dynamic>>> getAllFeedbacks() async {
+    final res = await http.get(
+      Uri.parse('$_baseUrl/admin/feedbacks'),
+      headers: _authHeaders,
+    ).timeout(const Duration(seconds: 10));
+    if (res.statusCode != 200) return [];
+    final body = json.decode(res.body) as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(body['feedbacks'] ?? []);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllNotifications() async {
+    final res = await http.get(
+      Uri.parse('$_baseUrl/admin/notifications'),
+      headers: _authHeaders,
+    ).timeout(const Duration(seconds: 10));
+    if (res.statusCode != 200) return [];
+    final body = json.decode(res.body) as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(body['notifications'] ?? []);
+  }
 
   // ── History ───────────────────────────────────────────────────────────────
 

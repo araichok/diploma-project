@@ -281,7 +281,15 @@ class _FeedbacksTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: feedbacks.length,
       itemBuilder: (context, i) {
-        final f = feedbacks[i];
+        final f = feedbacks[i] as Map<String, dynamic>;
+        final rating = (f['rating'] as num?)?.toInt() ?? 0;
+        final userId = (f['user_id'] as String? ?? '').isNotEmpty
+            ? (f['user_id'] as String).substring(0, 8)
+            : '?';
+        final routeId = (f['route_id'] as String? ?? '').isNotEmpty
+            ? (f['route_id'] as String).substring(0, 8)
+            : '?';
+        final createdAt = f['created_at'] as String? ?? '';
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: Padding(
@@ -291,21 +299,28 @@ class _FeedbacksTab extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(child: Text(f['userName'][0].toUpperCase())),
+                    CircleAvatar(
+                      backgroundColor: Colors.red.shade100,
+                      child: Text(userId[0].toUpperCase(),
+                          style: TextStyle(color: Colors.red.shade700)),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(f['userName'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text(f['routeName'], style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                          Text('User …$userId',
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text('Route …$routeId',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade600)),
                         ],
                       ),
                     ),
                     Row(
                       children: List.generate(5, (star) {
                         return Icon(
-                          star < (f['rating'] as int) ? Icons.star : Icons.star_border,
+                          star < rating ? Icons.star : Icons.star_border,
                           size: 16,
                           color: Colors.amber,
                         );
@@ -313,13 +328,15 @@ class _FeedbacksTab extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(f['comment']),
                 const SizedBox(height: 8),
-                Text(
-                  _formatDate(DateTime.parse(f['createdAt'])),
-                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
-                ),
+                Text(f['comment'] as String? ?? ''),
+                const SizedBox(height: 6),
+                if (createdAt.isNotEmpty)
+                  Text(
+                    _formatDate(createdAt),
+                    style:
+                        TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                  ),
               ],
             ),
           ),
@@ -328,7 +345,14 @@ class _FeedbacksTab extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) => '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute}';
+  String _formatDate(String raw) {
+    try {
+      final d = DateTime.parse(raw).toLocal();
+      return '${d.day}.${d.month}.${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return raw;
+    }
+  }
 }
 
 class _NotificationsTab extends StatelessWidget {
@@ -347,26 +371,42 @@ class _NotificationsTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: notifications.length,
       itemBuilder: (context, i) {
-        final n = notifications[i];
+        final n = notifications[i] as Map<String, dynamic>;
+        final isRead = n['is_read'] as bool? ?? false;
+        final message = n['message'] as String? ?? '';
+        final type = n['type'] as String? ?? '';
+        final createdAt = n['created_at'] as String? ?? '';
         return ListTile(
           leading: CircleAvatar(
-            backgroundColor: n['isRead'] ? Colors.grey.shade200 : Colors.red.shade100,
-            child: Icon(Icons.notifications, color: n['isRead'] ? Colors.grey : Colors.red),
+            backgroundColor:
+                isRead ? Colors.grey.shade200 : Colors.red.shade100,
+            child: Icon(Icons.notifications,
+                color: isRead ? Colors.grey : Colors.red),
           ),
-          title: Text(n['title'], style: TextStyle(fontWeight: n['isRead'] ? FontWeight.normal : FontWeight.bold)),
-          subtitle: Text(n['message']),
-          trailing: Text(_formatTime(DateTime.parse(n['createdAt'])), style: const TextStyle(fontSize: 12)),
-          onTap: () {
-            // можно пометить прочитанным, если есть API
-          },
+          title: Text(
+            type.isNotEmpty ? type : 'Notification',
+            style: TextStyle(
+                fontWeight:
+                    isRead ? FontWeight.normal : FontWeight.bold),
+          ),
+          subtitle: Text(message),
+          trailing: createdAt.isNotEmpty
+              ? Text(_formatTime(createdAt),
+                  style: const TextStyle(fontSize: 12))
+              : null,
         );
       },
     );
   }
 
-  String _formatTime(DateTime time) {
-    final diff = DateTime.now().difference(time);
-    if (diff.inHours < 24) return '${diff.inHours} h ago';
-    return '${diff.inDays} d ago';
+  String _formatTime(String raw) {
+    try {
+      final time = DateTime.parse(raw);
+      final diff = DateTime.now().difference(time);
+      if (diff.inHours < 24) return '${diff.inHours}h ago';
+      return '${diff.inDays}d ago';
+    } catch (_) {
+      return raw;
+    }
   }
 }
