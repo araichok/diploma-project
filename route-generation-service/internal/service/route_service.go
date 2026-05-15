@@ -24,8 +24,9 @@ type PreferenceCreatedEvent struct {
 }
 
 type RouteService struct {
-	routeRepo      *repository.RouteRepository
-	locationClient *client.LocationClient
+	routeRepo          *repository.RouteRepository
+	locationClient     *client.LocationClient
+	routeHistoryClient *client.RouteHistoryClient
 }
 
 type routeCandidate struct {
@@ -39,10 +40,12 @@ type routeCandidate struct {
 func NewRouteService(
 	routeRepo *repository.RouteRepository,
 	locationClient *client.LocationClient,
+	routeHistoryClient *client.RouteHistoryClient,
 ) *RouteService {
 	return &RouteService{
-		routeRepo:      routeRepo,
-		locationClient: locationClient,
+		routeRepo:          routeRepo,
+		locationClient:     locationClient,
+		routeHistoryClient: routeHistoryClient,
 	}
 }
 
@@ -72,6 +75,17 @@ func (s *RouteService) GenerateRouteFromPreference(
 	err = s.routeRepo.CreateRoute(ctx, route)
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.routeHistoryClient.CreateHistory(
+		ctx,
+		route.UserID,
+		route.ID,
+		route.Title,
+		route.Mood,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create route history: %w", err)
 	}
 
 	return route, nil
@@ -132,7 +146,6 @@ func (s *RouteService) buildRoute(
 			continue
 		}
 
-		// кафе, ресторан, fast_food, cinema только 1 раз
 		if !canAddMoreByType(candidate.placeType, usedTypes) {
 			continue
 		}
