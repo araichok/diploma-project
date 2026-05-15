@@ -20,7 +20,8 @@ func main() {
 	defer cancel()
 
 	userID := "05a85abe-96e9-432f-b846-e755a411ad86"
-	routeID := "1d17cf5b-2b87-44a9-bb02-6867ff8af07e"
+	routeID := fmt.Sprintf("route-%d", time.Now().Unix())
+	adminUserID := fmt.Sprintf("admin-test-%d", time.Now().Unix())
 
 	routeConn, err := grpc.Dial("localhost:50056", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -137,7 +138,7 @@ func main() {
 	adminClient := adminpb.NewAdminServiceClient(adminConn)
 
 	adminRes, err := adminClient.AddAdmin(ctx, &adminpb.AddAdminRequest{
-		UserId: fmt.Sprintf("admin-test-%d", time.Now().Unix()),
+		UserId: adminUserID,
 		Role:   "admin",
 	})
 	if err != nil {
@@ -149,7 +150,7 @@ func main() {
 	fmt.Println("Role:", adminRes.Admin.Role)
 
 	isAdminRes, err := adminClient.IsAdmin(ctx, &adminpb.IsAdminRequest{
-		UserId: fmt.Sprintf("admin-test-%d", time.Now().Unix())})
+		UserId: adminUserID})
 	if err != nil {
 		log.Fatalf("IsAdmin failed: %v", err)
 	}
