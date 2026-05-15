@@ -20,6 +20,10 @@ class MapProvider extends ChangeNotifier {
   int _currentStopIndex = 0;
   String _markerColor = '#0066FF';
   String _userId = '';
+  int? _beforeMood; // captured before the walk starts
+
+  int? get beforeMood => _beforeMood;
+  set beforeMood(int? v) => _beforeMood = v;
 
   RouteData? get routeData => _routeData;
   Uint8List? get mapImageBytes =>
@@ -56,6 +60,7 @@ class MapProvider extends ChangeNotifier {
     _currentStopIndex = 0;
     _markerColor = markerColor;
     _userId = userId;
+    _beforeMood = null;
     notifyListeners();
 
     try {
@@ -229,6 +234,7 @@ class MapProvider extends ChangeNotifier {
     _error = null;
     _currentStopIndex = 0;
     _isCompleted = false;
+    _beforeMood = null;
     notifyListeners();
   }
 }

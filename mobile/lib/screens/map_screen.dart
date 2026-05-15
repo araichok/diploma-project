@@ -7,6 +7,9 @@ import '../models/route_stop.dart';
 import '../models/saved_route.dart';
 import 'feedback_screen.dart';
 
+const _moodEmojis = ['😞', '😕', '😐', '🙂', '😄'];
+const _moodLabels = ['Bad', 'Not great', 'Neutral', 'Good', 'Great'];
+
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -15,11 +18,40 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  bool _beforeMoodPickerShown = false;
+
+  void _maybeShowBeforeMoodPicker(BuildContext context, MapProvider mapProvider, Color color) {
+    if (_beforeMoodPickerShown) return;
+    if (mapProvider.isLoading || mapProvider.routeData == null) return;
+    _beforeMoodPickerShown = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isDismissible: true,
+        enableDrag: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (_) => _BeforeMoodSheet(
+          color: color,
+          onSelected: (mood) {
+            mapProvider.beforeMood = mood;
+            Navigator.pop(context);
+          },
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final mapProvider = Provider.of<MapProvider>(context);
     final moodProvider = Provider.of<MoodProvider>(context);
     final routeData = mapProvider.routeData;
+    final color = moodProvider.selectedCategory?.color ?? Colors.blue;
+
+    _maybeShowBeforeMoodPicker(context, mapProvider, color);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,7 +112,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildRouteContent(MapProvider mapProvider, MoodProvider moodProvider) {
     final stops = mapProvider.sortedStops;
     final current = mapProvider.currentStop;
-    final color = moodProvider.selectedCategory?.color ?? Colors.blue;
+    final color = moodProvider.selectedCategory?.color ?? Colors.blue; // local — needed in helper widgets
 
     return Column(
       children: [
@@ -427,6 +459,120 @@ class _MapScreenState extends State<MapScreen> {
       const SnackBar(
         content: Text('Route saved!'),
         backgroundColor: Colors.green,
+      ),
+    );
+  }
+}
+
+class _BeforeMoodSheet extends StatefulWidget {
+  final Color color;
+  final void Function(int) onSelected;
+  const _BeforeMoodSheet({required this.color, required this.onSelected});
+
+  @override
+  State<_BeforeMoodSheet> createState() => _BeforeMoodSheetState();
+}
+
+class _BeforeMoodSheetState extends State<_BeforeMoodSheet> {
+  int? _selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'How are you feeling\nright now?',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Before you start the route',
+            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(5, (i) {
+              final on = _selected == i;
+              return GestureDetector(
+                onTap: () => setState(() => _selected = i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  width: 58,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    color: on
+                        ? widget.color.withOpacity(0.14)
+                        : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: on ? widget.color : Colors.grey[300]!,
+                      width: on ? 2 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(_moodEmojis[i],
+                          style: TextStyle(fontSize: on ? 28 : 22)),
+                      const SizedBox(height: 3),
+                      Text(
+                        _moodLabels[i],
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: on ? widget.color : Colors.grey[500],
+                          fontWeight: on ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Skip',
+                      style: TextStyle(color: Colors.grey[500])),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: _selected != null
+                      ? () => widget.onSelected(_selected!)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.color,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text("Let's go!"),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
