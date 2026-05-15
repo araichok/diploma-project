@@ -14,6 +14,8 @@ services:
       - user-service
       - preference-service
       - route-generation-service
+    networks:
+      - diploma-network
 
   user-service:
     build: ./user-service
@@ -35,6 +37,8 @@ services:
       - user-postgres
       - user-redis
       - nats
+    networks:
+      - diploma-network
 
   preference-service:
     build: ./preference-service
@@ -55,6 +59,8 @@ services:
       - preference-postgres
       - preference-redis
       - nats
+    networks:
+      - diploma-network
 
   route-generation-service:
     build: ./route-generation-service
@@ -70,10 +76,13 @@ services:
       POSTGRES_DB: route_db
       NATS_URL: nats://nats:4222
       LOCATION_SERVICE_ADDR: location-service:50054
+      ROUTE_HISTORY_SERVICE_ADDR: route-history-service:50056
     depends_on:
       - route-postgres
       - nats
       - location-service
+    networks:
+      - diploma-network
 
   location-service:
     build: ./location-service
@@ -89,6 +98,8 @@ services:
       DB_NAME: location_db
     depends_on:
       - location-postgres
+    networks:
+      - diploma-network
 
   user-postgres:
     image: postgres:16
@@ -102,6 +113,8 @@ services:
     volumes:
       - user_postgres_data:/var/lib/postgresql/data
       - ./user-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - diploma-network
 
   preference-postgres:
     image: postgres:16
@@ -115,6 +128,8 @@ services:
     volumes:
       - preference_postgres_data:/var/lib/postgresql/data
       - ./preference-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - diploma-network
 
   route-postgres:
     image: postgres:15
@@ -127,6 +142,8 @@ services:
       - "5435:5432"
     volumes:
       - ./route-generation-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - diploma-network
 
   location-postgres:
     image: postgres:16
@@ -140,26 +157,41 @@ services:
     volumes:
       - location_postgres_data:/var/lib/postgresql/data
       - ./location-service/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - diploma-network
 
   user-redis:
     image: redis:7
     container_name: user-redis
     ports:
       - "6379:6379"
+    networks:
+      - diploma-network
 
   preference-redis:
     image: redis:7
     container_name: preference-redis
     ports:
       - "6380:6379"
+    networks:
+      - diploma-network
 
   nats:
     image: nats:latest
     container_name: nats
     ports:
       - "4222:4222"
+    networks:
+      - diploma-network
+
 
 volumes:
   user_postgres_data:
   preference_postgres_data:
   location_postgres_data:
+
+
+
+networks:
+  diploma-network:
+    external: true
