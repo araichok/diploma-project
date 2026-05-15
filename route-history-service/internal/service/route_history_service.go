@@ -45,6 +45,12 @@ func (s *RouteHistoryService) CreateHistory(ctx context.Context, req *pb.CreateH
 		return nil, err
 	}
 
+	go s.notificationClient.SendNotification(
+		history.UserID,
+		"You have a planned trip.",
+		"route_planned",
+	)
+
 	return &pb.HistoryResponse{
 		History: &pb.History{
 			HistoryId: history.ID,

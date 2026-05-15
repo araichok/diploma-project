@@ -29,12 +29,43 @@ func main() {
 		log.Fatal("failed to connect route-generation-service: ", err)
 	}
 
+	historyClient, err := client.NewHistoryClient(os.Getenv("HISTORY_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect route-history-service: ", err)
+	}
+
+	feedbackClient, err := client.NewFeedbackClient(os.Getenv("FEEDBACK_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect feedback-service: ", err)
+	}
+
+	notificationClient, err := client.NewNotificationClient(os.Getenv("NOTIFICATION_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect notification-service: ", err)
+	}
+
+	adminClient, err := client.NewAdminClient(os.Getenv("ADMIN_SERVICE_ADDR"))
+	if err != nil {
+		log.Fatal("failed to connect admin-service: ", err)
+	}
+
 	userHandler := handler.NewUserHandler(userClient)
 	preferenceHandler := handler.NewPreferenceHandler(preferenceClient)
 	routeHandler := handler.NewRouteHandler(routeClient)
+	historyHandler := handler.NewHistoryHandler(historyClient)
+	feedbackHandler := handler.NewFeedbackHandler(feedbackClient)
+	notificationHandler := handler.NewNotificationHandler(notificationClient)
+	adminHandler := handler.NewAdminHandler(adminClient)
 
-	r := router.SetupRouter(userHandler, preferenceHandler, routeHandler)
-
+	r := router.SetupRouter(
+		userHandler,
+		preferenceHandler,
+		routeHandler,
+		historyHandler,
+		feedbackHandler,
+		notificationHandler,
+		adminHandler,
+	)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	pb "feedback-service/proto/notification"
@@ -16,7 +17,12 @@ type NotificationClient struct {
 }
 
 func NewNotificationClient() *NotificationClient {
-	conn, err := grpc.Dial("localhost:50057", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	addr := os.Getenv("NOTIFICATION_SERVICE_ADDR")
+	if addr == "" {
+		addr = "notification-service:50057"
+	}
+
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("could not connect to notification-service: %v", err)
 	}

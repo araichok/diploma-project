@@ -11,6 +11,10 @@ func SetupRouter(
 	userHandler *handler.UserHandler,
 	preferenceHandler *handler.PreferenceHandler,
 	routeHandler *handler.RouteHandler,
+	historyHandler *handler.HistoryHandler,
+	feedbackHandler *handler.FeedbackHandler,
+	notificationHandler *handler.NotificationHandler,
+	adminHandler *handler.AdminHandler,
 ) *gin.Engine {
 
 	r := gin.Default()
@@ -50,6 +54,45 @@ func SetupRouter(
 	protected.GET(
 		"/route/:route_id",
 		routeHandler.GetRouteByID,
+	)
+
+	// history
+	protected.GET(
+		"/history/:user_id",
+		historyHandler.GetUserHistory,
+	)
+
+	// feedback
+	protected.POST(
+		"/feedback",
+		feedbackHandler.CreateFeedback,
+	)
+
+	protected.GET(
+		"/feedback/route/:route_id",
+		feedbackHandler.GetFeedbackByRoute,
+	)
+
+	// notifications
+	protected.GET(
+		"/notifications/:user_id",
+		notificationHandler.GetUserNotifications,
+	)
+
+	// admin
+	protected.POST(
+		"/admin",
+		adminHandler.AddAdmin,
+	)
+
+	protected.GET(
+		"/admin/check/:user_id",
+		adminHandler.IsAdmin,
+	)
+
+	protected.GET(
+		"/admin/stats",
+		adminHandler.GetStats,
 	)
 
 	return r
