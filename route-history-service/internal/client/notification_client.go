@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	pb "route-history-service/proto/notification"
@@ -17,8 +18,13 @@ type NotificationClient struct {
 
 func NewNotificationClient() *NotificationClient {
 
+	addr := os.Getenv("NOTIFICATION_SERVICE_ADDR")
+	if addr == "" {
+		addr = "notification-service:50057"
+	}
+
 	conn, err := grpc.Dial(
-		"notification-service:50057",
+		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 
@@ -40,6 +46,7 @@ func (n *NotificationClient) SendNotification(userID, message, notifType string)
 		Message: message,
 		Type:    notifType,
 	})
+
 	if err != nil {
 		log.Println("Error sending notification:", err)
 	}

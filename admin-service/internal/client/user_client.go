@@ -20,7 +20,7 @@ type UserClient struct {
 func NewUserClient() *UserClient {
 	addr := os.Getenv("USER_SERVICE_ADDR")
 	if addr == "" {
-		addr = "localhost:50051"
+		addr = "user-service:50051"
 	}
 
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))

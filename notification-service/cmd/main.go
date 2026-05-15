@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"notification-service/internal/database"
 	"notification-service/internal/handler"
@@ -28,6 +29,7 @@ func main() {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 	`)
+
 	if err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
@@ -36,7 +38,12 @@ func main() {
 	svc := service.NewNotificationService(repo)
 	grpcHandler := handler.NewNotificationGrpcServer(svc)
 
-	lis, err := net.Listen("tcp", ":50057")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "50057"
+	}
+
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -44,7 +51,8 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterNotificationServiceServer(s, grpcHandler)
 
-	fmt.Println("Notification gRPC Service running on port 50057")
+	fmt.Println("Notification gRPC Service running on port " + port)
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

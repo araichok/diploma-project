@@ -11,6 +11,8 @@ services:
       - admin-postgres
 
     environment:
+      PORT: 50058
+
       DB_HOST: admin-postgres
       DB_PORT: 5432
       DB_USER: postgres

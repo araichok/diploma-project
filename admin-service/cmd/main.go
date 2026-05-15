@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"admin-service/internal/database"
 	"admin-service/internal/handler"
@@ -26,6 +27,7 @@ func main() {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 	`)
+
 	if err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
@@ -34,7 +36,12 @@ func main() {
 	svc := service.NewAdminService(repo)
 	grpcHandler := handler.NewAdminGrpcServer(svc)
 
-	lis, err := net.Listen("tcp", ":50058")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "50058"
+	}
+
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -42,7 +49,8 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterAdminServiceServer(s, grpcHandler)
 
-	fmt.Println("Admin gRPC Service running on port 50058")
+	fmt.Println("Admin gRPC Service running on port " + port)
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

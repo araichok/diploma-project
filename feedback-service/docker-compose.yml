@@ -11,6 +11,8 @@ services:
       - feedback-postgres
 
     environment:
+      PORT: 50055
+
       DB_HOST: feedback-postgres
       DB_PORT: 5432
       DB_USER: postgres

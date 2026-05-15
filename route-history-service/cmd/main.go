@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"route-history-service/internal/repository"
 	"route-history-service/internal/service"
@@ -19,7 +20,12 @@ func main() {
 	repo := repository.NewRouteHistoryRepository(storage.DB)
 	historyService := service.NewRouteHistoryService(repo)
 
-	lis, err := net.Listen("tcp", ":50056")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "50056"
+	}
+
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -27,7 +33,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterRouteHistoryServiceServer(grpcServer, historyService)
 
-	fmt.Println("gRPC Route History Service running on port 50056")
+	fmt.Println("gRPC Route History Service running on port " + port)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
