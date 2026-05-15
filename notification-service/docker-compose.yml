@@ -11,6 +11,8 @@ services:
       - notification-postgres
 
     environment:
+      PORT: 50057
+
       DB_HOST: notification-postgres
       DB_PORT: 5432
       DB_USER: postgres
