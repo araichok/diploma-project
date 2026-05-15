@@ -164,7 +164,24 @@ class MapProvider extends ChangeNotifier {
       'markers': markers,
     };
 
-    // TODO: add route polyline once markers are confirmed working
+    if (_routePath != null && _routePath!.length >= 2) {
+      const maxPoints = 30;
+      final step = max(1, (_routePath!.length / maxPoints).ceil());
+      final simplified = _simplifyPath(_routePath!, step: step);
+      // POST API uses {lat, lon} objects and type:"polyline" (not GeoJSON)
+      bodyMap['geometries'] = [
+        {
+          'type': 'polyline',
+          'linecolor': '#0066FF',
+          'linewidth': 3,
+          'lineopacity': 0.8,
+          'linestyle': 'solid',
+          'value': simplified
+              .map((pt) => {'lat': pt[1], 'lon': pt[0]})
+              .toList(),
+        }
+      ];
+    }
 
     final uri = Uri.parse(
       'https://maps.geoapify.com/v1/staticmap?apiKey=${GeoapifyConfig.apiKey}',
