@@ -24,6 +24,7 @@ func SetupRouter(
 	// public routes
 	api.POST("/register", userHandler.Register)
 	api.POST("/login", userHandler.Login)
+	api.POST("/refresh-token", userHandler.RefreshToken)
 
 	// protected routes
 	protected := api.Group("/")
@@ -31,6 +32,10 @@ func SetupRouter(
 
 	// user
 	protected.GET("/profile/:id", userHandler.GetProfile)
+	protected.PUT("/users/:id", userHandler.UpdateUser)
+	protected.DELETE("/users/:id", userHandler.DeleteUser)
+	protected.POST("/logout", userHandler.Logout)
+	protected.PUT("/change-password", userHandler.ChangePassword)
 
 	// preferences
 	protected.POST("/preferences", preferenceHandler.CreatePreference)
