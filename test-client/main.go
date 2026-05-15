@@ -19,8 +19,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	userID := "user-001"
-	routeID := fmt.Sprintf("route-test-%d", time.Now().Unix())
+	userID := "05a85abe-96e9-432f-b846-e755a411ad86"
+	routeID := "1d17cf5b-2b87-44a9-bb02-6867ff8af07e"
 
 	routeConn, err := grpc.Dial("localhost:50056", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -47,8 +47,8 @@ func main() {
 	historyRes, err := routeClient.CreateHistory(ctx, &routepb.CreateHistoryRequest{
 		UserId:    userID,
 		RouteId:   routeID,
-		RouteName: "Astana City Walk",
-		Mood:      "adventurous",
+		RouteName: "calm route in Astana, Kazakhstan",
+		Mood:      "calm",
 	})
 	if err != nil {
 		log.Fatalf("CreateHistory failed: %v", err)
