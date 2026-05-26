@@ -19,8 +19,8 @@ func NewUserRepository(db *pgx.Conn) *UserRepository {
 
 func (r *UserRepository) CreateUser(user *model.User) error {
 	query := `
-		INSERT INTO users (first_name, last_name, email, password_hash, role)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO users (first_name, last_name, email, phone_number, password_hash, role)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, role, created_at, updated_at
 	`
 
@@ -30,6 +30,7 @@ func (r *UserRepository) CreateUser(user *model.User) error {
 		user.FirstName,
 		user.LastName,
 		user.Email,
+		user.PhoneNumber,
 		user.PasswordHash,
 		user.Role,
 	).Scan(
@@ -42,7 +43,7 @@ func (r *UserRepository) CreateUser(user *model.User) error {
 
 func (r *UserRepository) GetUserByEmail(email string) (*model.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, password_hash, role, created_at, updated_at
+		SELECT id, first_name, last_name, email, phone_number, password_hash, role, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
@@ -54,6 +55,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.User, error) {
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
+		&user.PhoneNumber,
 		&user.PasswordHash,
 		&user.Role,
 		&user.CreatedAt,
@@ -69,7 +71,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.User, error) {
 
 func (r *UserRepository) GetUserByID(id string) (*model.User, error) {
 	query := `
-		SELECT id, first_name, last_name, email, password_hash, role, created_at, updated_at
+		SELECT id, first_name, last_name, email, phone_number, password_hash, role, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
@@ -81,6 +83,7 @@ func (r *UserRepository) GetUserByID(id string) (*model.User, error) {
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
+		&user.PhoneNumber,
 		&user.PasswordHash,
 		&user.Role,
 		&user.CreatedAt,
@@ -100,9 +103,10 @@ func (r *UserRepository) UpdateUser(id string, req model.UpdateUserRequest) (*mo
 		SET first_name = $1,
 		    last_name = $2,
 		    email = $3,
+		    phone_number = $4,
 		    updated_at = CURRENT_TIMESTAMP
-		WHERE id = $4
-		RETURNING id, first_name, last_name, email, password_hash, role, created_at, updated_at
+		WHERE id = $5
+		RETURNING id, first_name, last_name, email, phone_number, password_hash, role, created_at, updated_at
 	`
 
 	var user model.User
@@ -113,12 +117,14 @@ func (r *UserRepository) UpdateUser(id string, req model.UpdateUserRequest) (*mo
 		req.FirstName,
 		req.LastName,
 		req.Email,
+		req.PhoneNumber,
 		id,
 	).Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,
 		&user.Email,
+		&user.PhoneNumber,
 		&user.PasswordHash,
 		&user.Role,
 		&user.CreatedAt,
