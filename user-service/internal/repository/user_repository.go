@@ -212,3 +212,18 @@ func (r *UserRepository) ExistsByID(id string) (bool, error) {
 
 	return exists, nil
 }
+
+func (r *UserRepository) CountUsers() (int, error) {
+	var count int
+
+	query := `
+		SELECT COUNT(*) FROM users
+	`
+
+	err := r.db.QueryRow(context.Background(), query).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
