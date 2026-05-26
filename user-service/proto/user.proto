@@ -13,6 +13,7 @@ service UserService {
   rpc RefreshToken(RefreshTokenRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc CountUsers(CountUsersRequest) returns (CountUsersResponse);
 }
 
 message RegisterRequest {
@@ -80,4 +81,10 @@ message ChangePasswordRequest {
 
 message ChangePasswordResponse {
   string message = 1;
+}
+
+message CountUsersRequest {}
+
+message CountUsersResponse {
+  int32 total_users = 1;
 }
