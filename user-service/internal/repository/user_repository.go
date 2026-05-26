@@ -19,8 +19,8 @@ func NewUserRepository(db *pgx.Conn) *UserRepository {
 
 func (r *UserRepository) CreateUser(user *model.User) error {
 	query := `
-		INSERT INTO users (first_name, last_name, email, password_hash)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO users (first_name, last_name, email, password_hash, role)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, role, created_at, updated_at
 	`
 
@@ -31,6 +31,7 @@ func (r *UserRepository) CreateUser(user *model.User) error {
 		user.LastName,
 		user.Email,
 		user.PasswordHash,
+		user.Role,
 	).Scan(
 		&user.ID,
 		&user.Role,
