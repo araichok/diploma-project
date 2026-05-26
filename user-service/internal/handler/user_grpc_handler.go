@@ -25,10 +25,11 @@ func (h *UserGrpcHandler) Register(
 ) (*userpb.UserResponse, error) {
 
 	user, err := h.userService.Register(model.RegisterRequest{
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Email:     req.Email,
-		Password:  req.Password,
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		Email:       req.Email,
+		PhoneNumber: req.PhoneNumber,
+		Password:    req.Password,
 	})
 
 	if err != nil {
@@ -36,11 +37,12 @@ func (h *UserGrpcHandler) Register(
 	}
 
 	return &userpb.UserResponse{
-		Id:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Role:      user.Role,
+		Id:          user.ID,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
+		Role:        user.Role,
 	}, nil
 }
 
