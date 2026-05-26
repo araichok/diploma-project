@@ -218,3 +218,7 @@ func (s *UserService) ChangePassword(req model.ChangePasswordRequest) error {
 
 	return s.userRepo.UpdatePassword(req.UserID, newHashedPassword)
 }
+
+func (s *UserService) CountUsers() (int, error) {
+	return s.userRepo.CountUsers()
+}
