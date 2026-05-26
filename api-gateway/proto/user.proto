@@ -13,13 +13,15 @@ service UserService {
   rpc RefreshToken(RefreshTokenRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc CountUsers(CountUsersRequest) returns (CountUsersResponse);
 }
 
 message RegisterRequest {
   string first_name = 1;
   string last_name = 2;
   string email = 3;
-  string password = 4;
+  string phone_number = 4;
+  string password = 5;
 }
 
 message LoginRequest {
@@ -42,6 +44,7 @@ message UpdateUserRequest {
   string first_name = 2;
   string last_name = 3;
   string email = 4;
+  string phone_number = 5;
 }
 
 message DeleteUserRequest {
@@ -53,7 +56,8 @@ message UserResponse {
   string first_name = 2;
   string last_name = 3;
   string email = 4;
-  string role = 5;
+  string phone_number = 5;
+  string role = 6;
 }
 
 message DeleteUserResponse {
@@ -80,4 +84,10 @@ message ChangePasswordRequest {
 
 message ChangePasswordResponse {
   string message = 1;
+}
+
+message CountUsersRequest {}
+
+message CountUsersResponse {
+  int32 total_users = 1;
 }
