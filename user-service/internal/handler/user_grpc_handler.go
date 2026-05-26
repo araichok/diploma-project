@@ -193,3 +193,18 @@ func (h *UserGrpcHandler) ChangePassword(
 		Message: "Password changed successfully",
 	}, nil
 }
+
+func (h *UserGrpcHandler) CountUsers(
+	ctx context.Context,
+	req *userpb.CountUsersRequest,
+) (*userpb.CountUsersResponse, error) {
+
+	count, err := h.userService.CountUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.CountUsersResponse{
+		TotalUsers: int32(count),
+	}, nil
+}
