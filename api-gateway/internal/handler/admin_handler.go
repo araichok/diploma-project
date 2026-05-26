@@ -83,15 +83,18 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 
 	var userCount, routeCount, feedbackCount, notifCount int32
 
-	if res, err := h.userClient.CountUsers(c, empty); err == nil && res != nil {
-		userCount = res.Value
+	if res, err := h.userClient.CountUsers(c, &userpb.CountUsersRequest{}); err == nil && res != nil {
+		userCount = res.TotalUsers
 	}
+
 	if res, err := h.routeClient.CountRoutes(c, empty); err == nil && res != nil {
 		routeCount = res.Value
 	}
+
 	if res, err := h.feedbackClient.GetAllFeedbacks(c, empty); err == nil && res != nil {
 		feedbackCount = int32(len(res.Feedbacks))
 	}
+
 	if res, err := h.notifClient.GetAllNotifications(c, empty); err == nil && res != nil {
 		notifCount = int32(len(res.Notifications))
 	}
@@ -103,7 +106,6 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 		"total_notifications": notifCount,
 	})
 }
-
 func (h *AdminHandler) GetAllFeedbacks(c *gin.Context) {
 	res, err := h.feedbackClient.GetAllFeedbacks(c, &emptypb.Empty{})
 	if err != nil {
