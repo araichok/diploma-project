@@ -43,6 +43,7 @@ func (s *UserService) Register(req model.RegisterRequest) (*model.User, error) {
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		Email:        req.Email,
+		PhoneNumber:  req.PhoneNumber,
 		PasswordHash: hashedPassword,
 		Role:         "USER",
 	}
