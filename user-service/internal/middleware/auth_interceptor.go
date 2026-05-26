@@ -24,7 +24,8 @@ func AuthInterceptor(cfg *config.Config) grpc.UnaryServerInterceptor {
 
 		// public methods
 		if info.FullMethod == "/user.UserService/Register" ||
-			info.FullMethod == "/user.UserService/Login" {
+			info.FullMethod == "/user.UserService/Login" ||
+			info.FullMethod == "/user.UserService/CountUsers" {
 
 			return handler(ctx, req)
 		}
