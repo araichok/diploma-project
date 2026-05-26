@@ -44,6 +44,7 @@ func (s *UserService) Register(req model.RegisterRequest) (*model.User, error) {
 		LastName:     req.LastName,
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
+		Role:         "USER",
 	}
 
 	err = s.userRepo.CreateUser(user)
