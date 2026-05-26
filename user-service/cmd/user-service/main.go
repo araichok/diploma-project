@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 	"net"
+	"user-service/internal/auth"
 	"user-service/internal/messaging"
+	"user-service/internal/model"
 
 	"user-service/internal/cache"
 	"user-service/internal/config"
@@ -36,6 +38,28 @@ func main() {
 
 	// Repository
 	userRepo := repository.NewUserRepository(conn)
+
+	adminExists, _ := userRepo.GetUserByEmail("admin@travel.ai")
+
+	if adminExists == nil {
+
+		hashedPassword, _ := auth.HashPassword("admin123")
+
+		adminUser := &model.User{
+			FirstName:    "System",
+			LastName:     "Admin",
+			Email:        "admin@travel.ai",
+			PasswordHash: hashedPassword,
+			Role:         "ADMIN",
+		}
+
+		err := userRepo.CreateUser(adminUser)
+		if err != nil {
+			log.Println("failed to create admin:", err)
+		} else {
+			log.Println("default admin created")
+		}
+	}
 
 	err = messaging.StartUserCheckSubscriber(userRepo)
 	if err != nil {
