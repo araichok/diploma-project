@@ -7,6 +7,7 @@ type User struct {
 	FirstName    string    `json:"first_name"`
 	LastName     string    `json:"last_name"`
 	Email        string    `json:"email"`
+	PhoneNumber  string    `json:"phone_number"`
 	PasswordHash string    `json:"-"`
 	Role         string    `json:"role"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -14,10 +15,11 @@ type User struct {
 }
 
 type RegisterRequest struct {
-	FirstName string `json:"first_name" validate:"required,min=2,max=50"`
-	LastName  string `json:"last_name" validate:"required,min=2,max=50"`
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=8"`
+	FirstName   string `json:"first_name" validate:"required,min=2,max=50"`
+	LastName    string `json:"last_name" validate:"required,min=2,max=50"`
+	Email       string `json:"email" validate:"required,email"`
+	PhoneNumber string `json:"phone_number" validate:"required"`
+	Password    string `json:"password" validate:"required,min=8"`
 }
 
 type LoginRequest struct {
@@ -26,9 +28,10 @@ type LoginRequest struct {
 }
 
 type UpdateUserRequest struct {
-	FirstName string `json:"first_name" validate:"required,min=2,max=50"`
-	LastName  string `json:"last_name" validate:"required,min=2,max=50"`
-	Email     string `json:"email" validate:"required,email"`
+	FirstName   string `json:"first_name" validate:"required,min=2,max=50"`
+	LastName    string `json:"last_name" validate:"required,min=2,max=50"`
+	Email       string `json:"email" validate:"required,email"`
+	PhoneNumber string `json:"phone_number" validate:"required"`
 }
 
 type LoginResponse struct {
