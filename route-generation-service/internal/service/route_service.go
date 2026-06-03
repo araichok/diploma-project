@@ -20,6 +20,7 @@ type PreferenceCreatedEvent struct {
 	Date         string  `json:"date"`
 	Budget       float64 `json:"budget"`
 	Duration     int32   `json:"duration"`
+	Days         int32   `json:"days"`
 	Location     string  `json:"location"`
 }
 
@@ -104,6 +105,10 @@ func (s *RouteService) buildRoute(
 	locations []*locationpb.Location,
 ) *model.Route {
 
+	if event.Days <= 0 {
+		event.Days = 1
+	}
+
 	route := &model.Route{
 		UserID:        event.UserID,
 		PreferenceID:  event.PreferenceID,
@@ -125,12 +130,17 @@ func (s *RouteService) buildRoute(
 	})
 
 	var order int32 = 1
+	var currentDay int32 = 1
+	var currentDayDuration int32 = 0
+
+	hoursPerDay := event.Duration
+	totalAllowedDuration := event.Duration * event.Days
 
 	usedPlaces := make(map[string]bool)
 	usedTypes := make(map[string]int)
 
 	for _, candidate := range candidates {
-		if route.TotalDuration >= event.Duration {
+		if route.TotalDuration >= totalAllowedDuration {
 			break
 		}
 
@@ -142,8 +152,14 @@ func (s *RouteService) buildRoute(
 			continue
 		}
 
-		if route.TotalDuration+candidate.estimatedTime > event.Duration {
-			continue
+		if currentDayDuration+candidate.estimatedTime > hoursPerDay {
+			currentDay++
+			currentDayDuration = 0
+			order = 1
+		}
+
+		if currentDay > event.Days {
+			break
 		}
 
 		if !canAddMoreByType(candidate.placeType, usedTypes) {
@@ -157,6 +173,7 @@ func (s *RouteService) buildRoute(
 			Address:       "",
 			Lat:           candidate.location.Lat,
 			Lon:           candidate.location.Lon,
+			DayNumber:     currentDay,
 			VisitOrder:    order,
 			EstimatedTime: candidate.estimatedTime,
 			EstimatedCost: candidate.estimatedCost,
@@ -167,6 +184,7 @@ func (s *RouteService) buildRoute(
 
 		route.TotalBudget += candidate.estimatedCost
 		route.TotalDuration += candidate.estimatedTime
+		currentDayDuration += candidate.estimatedTime
 		order++
 	}
 
