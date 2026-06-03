@@ -19,7 +19,7 @@ type AdminHandler struct {
 	feedbackClient feedbackpb.FeedbackServiceClient
 	notifClient    notificationpb.NotificationServiceClient
 	userClient     userpb.UserServiceClient
-	routeClient    routepb.RouteServiceClient
+	historyClient historypb.RouteHistoryServiceClient
 }
 
 func NewAdminHandler(
