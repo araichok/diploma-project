@@ -52,6 +52,7 @@ func (s *PreferenceService) CreatePreference(p *model.Preference) (*model.Prefer
 		Date:         created.TravelDate,
 		Budget:       float64(created.Budget),
 		Duration:     created.Duration,
+		Days:         created.Days,
 		Location:     created.Location,
 	}
 
