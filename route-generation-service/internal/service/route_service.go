@@ -34,7 +34,7 @@ type routeCandidate struct {
 	placeType     string
 	estimatedTime int32
 	estimatedCost int32
-	priority      int32
+	score         float64
 }
 
 func NewRouteService(
@@ -118,10 +118,10 @@ func (s *RouteService) buildRoute(
 	candidates := buildCandidates(event.Mood, locations)
 
 	sort.Slice(candidates, func(i, j int) bool {
-		if candidates[i].priority == candidates[j].priority {
+		if candidates[i].score == candidates[j].score {
 			return candidates[i].estimatedCost < candidates[j].estimatedCost
 		}
-		return candidates[i].priority > candidates[j].priority
+		return candidates[i].score > candidates[j].score
 	})
 
 	var order int32 = 1
@@ -200,18 +200,100 @@ func buildCandidates(
 
 		estimatedTime := getEstimatedTimeByType(normalizedType)
 		estimatedCost := getEstimatedCostByType(normalizedType)
-		priority := getPriorityByMoodAndType(mood, normalizedType)
+
+		score := calculatePlaceScore(
+			mood,
+			normalizedType,
+			estimatedTime,
+		)
 
 		candidates = append(candidates, routeCandidate{
 			location:      loc,
 			placeType:     normalizedType,
 			estimatedTime: estimatedTime,
 			estimatedCost: estimatedCost,
-			priority:      priority,
+			score:         score,
 		})
 	}
 
 	return candidates
+}
+
+func calculatePlaceScore(
+	mood string,
+	placeType string,
+	estimatedTime int32,
+) float64 {
+
+	moodMatch := getMoodMatchScore(mood, placeType)
+	timeFit := getTimeFitScore(estimatedTime)
+	diversityFit := getDiversityFitScore(placeType)
+
+	return 0.6*moodMatch + 0.25*timeFit + 0.15*diversityFit
+}
+
+func getMoodMatchScore(mood string, placeType string) float64 {
+	priority := getPriorityByMoodAndType(mood, placeType)
+
+	if priority >= 90 {
+		return 1.0
+	}
+
+	if priority >= 70 {
+		return 0.8
+	}
+
+	if priority >= 50 {
+		return 0.6
+	}
+
+	return 0.3
+}
+
+func getDiversityFitScore(placeType string) float64 {
+	switch placeType {
+
+	case "park":
+		return 1.0
+
+	case "museum":
+		return 0.9
+
+	case "sight":
+		return 0.9
+
+	case "restaurant":
+		return 0.8
+
+	case "cafe":
+		return 0.7
+
+	case "shopping_mall":
+		return 0.8
+
+	case "cinema":
+		return 0.7
+
+	case "bowling":
+		return 0.7
+
+	case "nature":
+		return 0.9
+
+	default:
+		return 0.5
+	}
+}
+
+func getTimeFitScore(estimatedTime int32) float64 {
+	switch {
+	case estimatedTime <= 1:
+		return 1.0
+	case estimatedTime == 2:
+		return 0.8
+	default:
+		return 0.5
+	}
 }
 
 func normalizePlaceType(placeType string, name string) string {
@@ -260,6 +342,24 @@ func normalizePlaceType(placeType string, name string) string {
 	case strings.Contains(placeType, "tourism"):
 		return "sight"
 
+	case strings.Contains(placeType, "shopping_entertainment_center"):
+		return "shopping_mall"
+	case strings.Contains(placeType, "commercial.shopping_mall"):
+		return "shopping_mall"
+	case strings.Contains(placeType, "commercial.marketplace"):
+		return "marketplace"
+	case strings.Contains(placeType, "shopping"):
+		return "shopping"
+
+	case strings.Contains(placeType, "mountain_sports"):
+		return "sport"
+	case strings.Contains(placeType, "mountain_park"):
+		return "nature"
+	case strings.Contains(placeType, "natural"):
+		return "nature"
+	case strings.Contains(placeType, "sport"):
+		return "sport"
+
 	case strings.Contains(placeType, "bowling"):
 		return "bowling"
 	case strings.Contains(placeType, "cinema"):
@@ -268,6 +368,11 @@ func normalizePlaceType(placeType string, name string) string {
 		return "theatre"
 	case strings.Contains(placeType, "entertainment"):
 		return "entertainment"
+
+	case strings.Contains(placeType, "landmark"):
+		return "sight"
+	case strings.Contains(placeType, "city_landmark"):
+		return "sight"
 
 	default:
 		return "place"
@@ -299,6 +404,8 @@ func getEstimatedTimeByType(placeType string) int32 {
 	case "shopping_mall":
 		return 2
 	case "marketplace":
+		return 2
+	case "shopping":
 		return 2
 	case "sport":
 		return 2
@@ -332,6 +439,8 @@ func getEstimatedCostByType(placeType string) int32 {
 	case "shopping_mall":
 		return 5000
 	case "marketplace":
+		return 4000
+	case "shopping":
 		return 4000
 	case "sport":
 		return 3000
@@ -371,6 +480,8 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 			return 80
 		case "cafe":
 			return 70
+		case "sight":
+			return 70
 		}
 
 	case "romantic":
@@ -382,6 +493,8 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 		case "sight":
 			return 80
 		case "cinema":
+			return 70
+		case "cafe":
 			return 70
 		}
 
@@ -396,6 +509,8 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 		case "cafe":
 			return 70
 		case "sight":
+			return 60
+		case "shopping_mall":
 			return 60
 		}
 
@@ -418,11 +533,15 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 		case "museum":
 			return 100
 		case "sight":
-			return 90
+			return 95
 		case "heritage":
-			return 80
+			return 90
+		case "landmark":
+			return 90
 		case "library":
-			return 70
+			return 75
+		case "theatre":
+			return 75
 		}
 
 	case "food":
@@ -443,6 +562,10 @@ func getPriorityByMoodAndType(mood string, placeType string) int32 {
 			return 90
 		case "shopping":
 			return 80
+		case "cafe":
+			return 60
+		case "cinema":
+			return 60
 		}
 	}
 
