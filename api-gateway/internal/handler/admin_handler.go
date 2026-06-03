@@ -34,7 +34,7 @@ func NewAdminHandler(
 		feedbackClient: feedbackClient,
 		notifClient:    notifClient,
 		userClient:     userClient,
-		routeClient:    routeClient,
+		historyClient: historyClient,
 	}
 }
 
