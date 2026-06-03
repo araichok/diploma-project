@@ -12,6 +12,7 @@ type PreferenceCreatedEvent struct {
 	Date         string  `json:"date"`
 	Budget       float64 `json:"budget"`
 	Duration     int32   `json:"duration"`
+	Days         int32   `json:"days"`
 	Location     string  `json:"location"`
 }
 
