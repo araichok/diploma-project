@@ -24,9 +24,10 @@ message Preference {
   string mood = 3;
   int32 budget = 4;
   int32 duration = 5;
-  string location = 6;
-  string travel_date = 7;
-  string created_at = 8;
+  int32 days = 6;
+  string location = 7;
+  string travel_date = 8;
+  string created_at = 9;
 }
 
 message CreatePreferenceRequest {
@@ -34,8 +35,9 @@ message CreatePreferenceRequest {
   string mood = 2;
   int32 budget = 3;
   int32 duration = 4;
-  string location = 5;
-  string travel_date = 6;
+  int32 days = 5;
+  string location = 6;
+  string travel_date = 7;
 }
 
 message UpdatePreferenceRequest {
@@ -44,8 +46,9 @@ message UpdatePreferenceRequest {
   string mood = 3;
   int32 budget = 4;
   int32 duration = 5;
-  string location = 6;
-  string travel_date = 7;
+  int32 days = 6;
+  string location = 7;
+  string travel_date = 8;
 }
 
 message GetPreferenceHistoryRequest {
