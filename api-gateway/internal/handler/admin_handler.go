@@ -27,7 +27,7 @@ func NewAdminHandler(
 	feedbackClient feedbackpb.FeedbackServiceClient,
 	notifClient notificationpb.NotificationServiceClient,
 	userClient userpb.UserServiceClient,
-	routeClient routepb.RouteServiceClient,
+	historyClient historypb.RouteHistoryServiceClient,
 ) *AdminHandler {
 	return &AdminHandler{
 		client:         client,
