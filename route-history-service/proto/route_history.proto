@@ -60,3 +60,11 @@ message HistoryResponse {
 message HistoryListResponse {
   repeated History histories = 1;
 }
+
+
+
+message CountRoutesRequest {}
+
+message CountRoutesResponse {
+  int32 total_routes = 1;
+}
