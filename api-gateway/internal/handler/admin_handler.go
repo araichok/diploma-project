@@ -6,11 +6,12 @@ import (
 	adminpb "api-gateway/proto/adminpb"
 	feedbackpb "api-gateway/proto/feedbackpb"
 	notificationpb "api-gateway/proto/notificationpb"
-	routepb "api-gateway/proto/routepb"
 	userpb "api-gateway/proto/userpb"
 
 	"github.com/gin-gonic/gin"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+
+	historypb "api-gateway/proto/historypb"
 )
 
 type AdminHandler struct {
