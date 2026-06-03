@@ -39,17 +39,70 @@ type GeoapifyPlacesResponse struct {
 	} `json:"features"`
 }
 
-func GetPlaces(location string, categories string) ([]Place, error) {
+func GetPlaces(location string, categories string, limit int) ([]Place, error) {
 	lat, lon, err := getLocationCoordinates(location)
 	if err != nil {
 		return nil, err
 	}
 
-	return getPlacesByCoordinates(lat, lon, categories)
+	return getPlacesByCoordinates(lat, lon, categories, limit)
+}
+
+func GetPlaceByName(query string) ([]Place, error) {
+
+	apiKey := os.Getenv("GEOAPIFY_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("GEOAPIFY_API_KEY is empty")
+	}
+
+	requestURL := fmt.Sprintf(
+		"https://api.geoapify.com/v1/geocode/search?text=%s&filter=countrycode:kz&limit=1&apiKey=%s",
+		url.QueryEscape(query),
+		url.QueryEscape(apiKey),
+	)
+
+	resp, err := http.Get(requestURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("geoapify place search error: status %d", resp.StatusCode)
+	}
+
+	var data GeoapifyPlacesResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	var places []Place
+
+	for _, feature := range data.Features {
+
+		if feature.Properties.PlaceID == "" ||
+			feature.Properties.Name == "" {
+			continue
+		}
+
+		places = append(places, Place{
+			PlaceID: feature.Properties.PlaceID,
+			Name:    feature.Properties.Name,
+			Type:    "city_landmark",
+			Lat:     feature.Properties.Lat,
+			Lon:     feature.Properties.Lon,
+			City:    feature.Properties.City,
+		})
+	}
+
+	return places, nil
 }
 
 func getLocationCoordinates(location string) (float64, float64, error) {
+
 	apiKey := os.Getenv("GEOAPIFY_API_KEY")
+
 	if apiKey == "" {
 		return 0, 0, fmt.Errorf("GEOAPIFY_API_KEY is empty")
 	}
@@ -64,13 +117,18 @@ func getLocationCoordinates(location string) (float64, float64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return 0, 0, fmt.Errorf("geoapify geocode error: status %d", resp.StatusCode)
+		return 0, 0, fmt.Errorf(
+			"geoapify geocode error: status %d",
+			resp.StatusCode,
+		)
 	}
 
 	var data GeocodeResponse
+
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return 0, 0, err
 	}
@@ -79,35 +137,59 @@ func getLocationCoordinates(location string) (float64, float64, error) {
 		return 0, 0, fmt.Errorf("location not found")
 	}
 
-	return data.Features[0].Properties.Lat, data.Features[0].Properties.Lon, nil
+	return data.Features[0].Properties.Lat,
+		data.Features[0].Properties.Lon,
+		nil
 }
 
-func getPlacesByCoordinates(lat float64, lon float64, categories string) ([]Place, error) {
+func getPlacesByCoordinates(
+	lat float64,
+	lon float64,
+	categories string,
+	limit int,
+) ([]Place, error) {
+
 	apiKey := os.Getenv("GEOAPIFY_API_KEY")
+
 	if apiKey == "" {
 		return nil, fmt.Errorf("GEOAPIFY_API_KEY is empty")
 	}
 
-	filter := fmt.Sprintf("circle:%f,%f,15000", lon, lat)
+	if limit <= 0 {
+		limit = 5
+	}
+
+	filter := fmt.Sprintf(
+		"circle:%f,%f,15000",
+		lon,
+		lat,
+	)
 
 	requestURL := fmt.Sprintf(
-		"https://api.geoapify.com/v2/places?categories=%s&filter=%s&limit=20&apiKey=%s",
+		"https://api.geoapify.com/v2/places?categories=%s&filter=%s&limit=%d&apiKey=%s",
 		url.QueryEscape(categories),
 		url.QueryEscape(filter),
+		limit,
 		url.QueryEscape(apiKey),
 	)
 
 	resp, err := http.Get(requestURL)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("geoapify places error: status %d", resp.StatusCode)
+		return nil, fmt.Errorf(
+			"geoapify places error: status %d",
+			resp.StatusCode,
+		)
 	}
 
 	var data GeoapifyPlacesResponse
+
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, err
 	}
@@ -115,11 +197,14 @@ func getPlacesByCoordinates(lat float64, lon float64, categories string) ([]Plac
 	var places []Place
 
 	for _, feature := range data.Features {
-		if feature.Properties.PlaceID == "" || feature.Properties.Name == "" {
+
+		if feature.Properties.PlaceID == "" ||
+			feature.Properties.Name == "" {
 			continue
 		}
 
-		placeType := ""
+		placeType := categories
+
 		if len(feature.Properties.Categories) > 0 {
 			placeType = feature.Properties.Categories[0]
 		}
@@ -164,7 +249,9 @@ type GeoapifyDetailsResponse struct {
 }
 
 func GetPlaceDetails(placeID string) (*PlaceDetails, error) {
+
 	apiKey := os.Getenv("GEOAPIFY_API_KEY")
+
 	if apiKey == "" {
 		return nil, fmt.Errorf("GEOAPIFY_API_KEY is empty")
 	}
@@ -176,16 +263,22 @@ func GetPlaceDetails(placeID string) (*PlaceDetails, error) {
 	)
 
 	resp, err := http.Get(requestURL)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("geoapify place details error: status %d", resp.StatusCode)
+		return nil, fmt.Errorf(
+			"geoapify place details error: status %d",
+			resp.StatusCode,
+		)
 	}
 
 	var data GeoapifyDetailsResponse
+
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, err
 	}
@@ -197,6 +290,7 @@ func GetPlaceDetails(placeID string) (*PlaceDetails, error) {
 	props := data.Features[0].Properties
 
 	address := props.Formatted
+
 	if address == "" {
 		address = props.AddressLine1 + " " + props.AddressLine2
 	}
