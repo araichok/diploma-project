@@ -46,11 +46,11 @@ func (r *RouteRepository) CreateRoute(ctx context.Context, route *model.Route) e
 	}
 
 	placeQuery := `
-		INSERT INTO route_places
-		(route_id, place_id, name, type, address, lat, lon, visit_order, estimated_time, estimated_cost)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id
-	`
+	INSERT INTO route_places
+	(route_id, place_id, name, type, address, lat, lon, day_number, visit_order, estimated_time, estimated_cost)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+	RETURNING id
+`
 
 	for i := range route.Places {
 		route.Places[i].RouteID = route.ID
@@ -65,6 +65,7 @@ func (r *RouteRepository) CreateRoute(ctx context.Context, route *model.Route) e
 			route.Places[i].Address,
 			route.Places[i].Lat,
 			route.Places[i].Lon,
+			route.Places[i].DayNumber,
 			route.Places[i].VisitOrder,
 			route.Places[i].EstimatedTime,
 			route.Places[i].EstimatedCost,
@@ -162,11 +163,11 @@ func (r *RouteRepository) GetUserRoutes(ctx context.Context, userID string) ([]m
 
 func (r *RouteRepository) getRoutePlaces(ctx context.Context, routeID string) ([]model.RoutePlace, error) {
 	query := `
-		SELECT id, route_id, place_id, name, type, address, lat, lon, visit_order, estimated_time, estimated_cost
-		FROM route_places
-		WHERE route_id = $1
-		ORDER BY visit_order ASC
-	`
+	SELECT id, route_id, place_id, name, type, address, lat, lon, day_number, visit_order, estimated_time, estimated_cost
+	FROM route_places
+	WHERE route_id = $1
+	ORDER BY day_number ASC, visit_order ASC
+`
 
 	rows, err := r.db.QueryContext(ctx, query, routeID)
 	if err != nil {
@@ -188,6 +189,7 @@ func (r *RouteRepository) getRoutePlaces(ctx context.Context, routeID string) ([
 			&place.Address,
 			&place.Lat,
 			&place.Lon,
+			&place.DayNumber,
 			&place.VisitOrder,
 			&place.EstimatedTime,
 			&place.EstimatedCost,
