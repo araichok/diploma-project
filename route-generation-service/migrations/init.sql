@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS route_places (
     address TEXT,
     lat DOUBLE PRECISION,
     lon DOUBLE PRECISION,
+    day_number INTEGER NOT NULL DEFAULT 1,
     visit_order INTEGER NOT NULL,
     estimated_time INTEGER NOT NULL DEFAULT 0,
     estimated_cost INTEGER NOT NULL DEFAULT 0
