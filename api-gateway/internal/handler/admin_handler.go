@@ -19,7 +19,7 @@ type AdminHandler struct {
 	feedbackClient feedbackpb.FeedbackServiceClient
 	notifClient    notificationpb.NotificationServiceClient
 	userClient     userpb.UserServiceClient
-	historyClient historypb.RouteHistoryServiceClient
+	historyClient  historypb.RouteHistoryServiceClient
 }
 
 func NewAdminHandler(
@@ -34,7 +34,7 @@ func NewAdminHandler(
 		feedbackClient: feedbackClient,
 		notifClient:    notifClient,
 		userClient:     userClient,
-		historyClient: historyClient,
+		historyClient:  historyClient,
 	}
 }
 
@@ -89,8 +89,8 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 	}
 
 	if res, err := h.historyClient.CountRoutes(c, &historypb.CountRoutesRequest{}); err == nil && res != nil {
-	routeCount = res.TotalRoutes
-}
+		routeCount = res.TotalRoutes
+	}
 
 	if res, err := h.feedbackClient.GetAllFeedbacks(c, empty); err == nil && res != nil {
 		feedbackCount = int32(len(res.Feedbacks))
