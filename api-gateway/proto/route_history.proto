@@ -10,6 +10,8 @@ service RouteHistoryService {
   rpc UpdateHistoryStatus(UpdateHistoryStatusRequest) returns (HistoryResponse);
 
   rpc CheckRouteCompleted(CheckRouteCompletedRequest) returns (CheckRouteCompletedResponse);
+
+  rpc CountRoutes(CountRoutesRequest) returns (CountRoutesResponse);
 }
 
 message CreateHistoryRequest {
@@ -58,3 +60,6 @@ message HistoryResponse {
 message HistoryListResponse {
   repeated History histories = 1;
 }
+
+
+
