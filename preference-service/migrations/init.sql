@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS preferences (
     mood TEXT NOT NULL,
     budget INTEGER NOT NULL,
     duration INTEGER NOT NULL,
+    days INTEGER NOT NULL DEFAULT 1,
 
     location TEXT,
     travel_date DATE,
