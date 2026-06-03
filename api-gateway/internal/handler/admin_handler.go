@@ -87,9 +87,7 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 		userCount = res.TotalUsers
 	}
 
-	if res, err := h.routeClient.CountRoutes(c, empty); err == nil && res != nil {
-		routeCount = res.Value
-	}
+	routeCount = 0
 
 	if res, err := h.feedbackClient.GetAllFeedbacks(c, empty); err == nil && res != nil {
 		feedbackCount = int32(len(res.Feedbacks))
