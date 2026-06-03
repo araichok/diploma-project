@@ -505,6 +505,86 @@ func (x *HistoryListResponse) GetHistories() []*History {
 	return nil
 }
 
+type CountRoutesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CountRoutesRequest) Reset() {
+	*x = CountRoutesRequest{}
+	mi := &file_proto_route_history_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CountRoutesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CountRoutesRequest) ProtoMessage() {}
+
+func (x *CountRoutesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_route_history_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CountRoutesRequest.ProtoReflect.Descriptor instead.
+func (*CountRoutesRequest) Descriptor() ([]byte, []int) {
+	return file_proto_route_history_proto_rawDescGZIP(), []int{9}
+}
+
+type CountRoutesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TotalRoutes   int32                  `protobuf:"varint,1,opt,name=total_routes,json=totalRoutes,proto3" json:"total_routes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CountRoutesResponse) Reset() {
+	*x = CountRoutesResponse{}
+	mi := &file_proto_route_history_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CountRoutesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CountRoutesResponse) ProtoMessage() {}
+
+func (x *CountRoutesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_route_history_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CountRoutesResponse.ProtoReflect.Descriptor instead.
+func (*CountRoutesResponse) Descriptor() ([]byte, []int) {
+	return file_proto_route_history_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CountRoutesResponse) GetTotalRoutes() int32 {
+	if x != nil {
+		return x.TotalRoutes
+	}
+	return 0
+}
+
 var File_proto_route_history_proto protoreflect.FileDescriptor
 
 const file_proto_route_history_proto_rawDesc = "" +
@@ -543,13 +623,17 @@ const file_proto_route_history_proto_rawDesc = "" +
 	"\x0fHistoryResponse\x12/\n" +
 	"\ahistory\x18\x01 \x01(\v2\x15.routehistory.HistoryR\ahistory\"J\n" +
 	"\x13HistoryListResponse\x123\n" +
-	"\thistories\x18\x01 \x03(\v2\x15.routehistory.HistoryR\thistories2\xe5\x03\n" +
+	"\thistories\x18\x01 \x03(\v2\x15.routehistory.HistoryR\thistories\"\x14\n" +
+	"\x12CountRoutesRequest\"8\n" +
+	"\x13CountRoutesResponse\x12!\n" +
+	"\ftotal_routes\x18\x01 \x01(\x05R\vtotalRoutes2\xb9\x04\n" +
 	"\x13RouteHistoryService\x12R\n" +
 	"\rCreateHistory\x12\".routehistory.CreateHistoryRequest\x1a\x1d.routehistory.HistoryResponse\x12X\n" +
 	"\x0eGetUserHistory\x12#.routehistory.GetUserHistoryRequest\x1a!.routehistory.HistoryListResponse\x12T\n" +
 	"\x0eGetHistoryById\x12#.routehistory.GetHistoryByIdRequest\x1a\x1d.routehistory.HistoryResponse\x12^\n" +
 	"\x13UpdateHistoryStatus\x12(.routehistory.UpdateHistoryStatusRequest\x1a\x1d.routehistory.HistoryResponse\x12j\n" +
-	"\x13CheckRouteCompleted\x12(.routehistory.CheckRouteCompletedRequest\x1a).routehistory.CheckRouteCompletedResponseB\x1dZ\x1b./proto/historypb;historypbb\x06proto3"
+	"\x13CheckRouteCompleted\x12(.routehistory.CheckRouteCompletedRequest\x1a).routehistory.CheckRouteCompletedResponse\x12R\n" +
+	"\vCountRoutes\x12 .routehistory.CountRoutesRequest\x1a!.routehistory.CountRoutesResponseB\x1dZ\x1b./proto/historypb;historypbb\x06proto3"
 
 var (
 	file_proto_route_history_proto_rawDescOnce sync.Once
@@ -563,7 +647,7 @@ func file_proto_route_history_proto_rawDescGZIP() []byte {
 	return file_proto_route_history_proto_rawDescData
 }
 
-var file_proto_route_history_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_route_history_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_proto_route_history_proto_goTypes = []any{
 	(*CreateHistoryRequest)(nil),        // 0: routehistory.CreateHistoryRequest
 	(*GetUserHistoryRequest)(nil),       // 1: routehistory.GetUserHistoryRequest
@@ -574,25 +658,29 @@ var file_proto_route_history_proto_goTypes = []any{
 	(*History)(nil),                     // 6: routehistory.History
 	(*HistoryResponse)(nil),             // 7: routehistory.HistoryResponse
 	(*HistoryListResponse)(nil),         // 8: routehistory.HistoryListResponse
+	(*CountRoutesRequest)(nil),          // 9: routehistory.CountRoutesRequest
+	(*CountRoutesResponse)(nil),         // 10: routehistory.CountRoutesResponse
 }
 var file_proto_route_history_proto_depIdxs = []int32{
-	6, // 0: routehistory.HistoryResponse.history:type_name -> routehistory.History
-	6, // 1: routehistory.HistoryListResponse.histories:type_name -> routehistory.History
-	0, // 2: routehistory.RouteHistoryService.CreateHistory:input_type -> routehistory.CreateHistoryRequest
-	1, // 3: routehistory.RouteHistoryService.GetUserHistory:input_type -> routehistory.GetUserHistoryRequest
-	2, // 4: routehistory.RouteHistoryService.GetHistoryById:input_type -> routehistory.GetHistoryByIdRequest
-	3, // 5: routehistory.RouteHistoryService.UpdateHistoryStatus:input_type -> routehistory.UpdateHistoryStatusRequest
-	4, // 6: routehistory.RouteHistoryService.CheckRouteCompleted:input_type -> routehistory.CheckRouteCompletedRequest
-	7, // 7: routehistory.RouteHistoryService.CreateHistory:output_type -> routehistory.HistoryResponse
-	8, // 8: routehistory.RouteHistoryService.GetUserHistory:output_type -> routehistory.HistoryListResponse
-	7, // 9: routehistory.RouteHistoryService.GetHistoryById:output_type -> routehistory.HistoryResponse
-	7, // 10: routehistory.RouteHistoryService.UpdateHistoryStatus:output_type -> routehistory.HistoryResponse
-	5, // 11: routehistory.RouteHistoryService.CheckRouteCompleted:output_type -> routehistory.CheckRouteCompletedResponse
-	7, // [7:12] is the sub-list for method output_type
-	2, // [2:7] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	6,  // 0: routehistory.HistoryResponse.history:type_name -> routehistory.History
+	6,  // 1: routehistory.HistoryListResponse.histories:type_name -> routehistory.History
+	0,  // 2: routehistory.RouteHistoryService.CreateHistory:input_type -> routehistory.CreateHistoryRequest
+	1,  // 3: routehistory.RouteHistoryService.GetUserHistory:input_type -> routehistory.GetUserHistoryRequest
+	2,  // 4: routehistory.RouteHistoryService.GetHistoryById:input_type -> routehistory.GetHistoryByIdRequest
+	3,  // 5: routehistory.RouteHistoryService.UpdateHistoryStatus:input_type -> routehistory.UpdateHistoryStatusRequest
+	4,  // 6: routehistory.RouteHistoryService.CheckRouteCompleted:input_type -> routehistory.CheckRouteCompletedRequest
+	9,  // 7: routehistory.RouteHistoryService.CountRoutes:input_type -> routehistory.CountRoutesRequest
+	7,  // 8: routehistory.RouteHistoryService.CreateHistory:output_type -> routehistory.HistoryResponse
+	8,  // 9: routehistory.RouteHistoryService.GetUserHistory:output_type -> routehistory.HistoryListResponse
+	7,  // 10: routehistory.RouteHistoryService.GetHistoryById:output_type -> routehistory.HistoryResponse
+	7,  // 11: routehistory.RouteHistoryService.UpdateHistoryStatus:output_type -> routehistory.HistoryResponse
+	5,  // 12: routehistory.RouteHistoryService.CheckRouteCompleted:output_type -> routehistory.CheckRouteCompletedResponse
+	10, // 13: routehistory.RouteHistoryService.CountRoutes:output_type -> routehistory.CountRoutesResponse
+	8,  // [8:14] is the sub-list for method output_type
+	2,  // [2:8] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_route_history_proto_init() }
@@ -606,7 +694,7 @@ func file_proto_route_history_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_route_history_proto_rawDesc), len(file_proto_route_history_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
