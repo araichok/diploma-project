@@ -47,7 +47,8 @@ message RoutePlace {
   string address = 6;
   double lat = 7;
   double lon = 8;
-  int32 visit_order = 9;
-  int32 estimated_time = 10;
-  int32 estimated_cost = 11;
+  int32 day_number = 9;
+  int32 visit_order = 10;
+  int32 estimated_time = 11;
+  int32 estimated_cost = 12;
 }
