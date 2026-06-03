@@ -63,3 +63,8 @@ message HistoryListResponse {
 
 
 
+message CountRoutesRequest {}
+
+message CountRoutesResponse {
+  int32 total_routes = 1;
+}
