@@ -24,6 +24,7 @@ type RoutePlace struct {
 	Address       string
 	Lat           float64
 	Lon           float64
+	DayNumber     int32
 	VisitOrder    int32
 	EstimatedTime int32
 	EstimatedCost int32
