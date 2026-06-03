@@ -24,6 +24,7 @@ func modelToProto(p *model.Preference) *pb.Preference {
 		Mood:       p.Mood,
 		Budget:     p.Budget,
 		Duration:   p.Duration,
+		Days:       p.Days,
 		Location:   p.Location,
 		TravelDate: p.TravelDate,
 		CreatedAt:  p.CreatedAt.String(),
@@ -40,6 +41,7 @@ func (h *PreferenceHandler) CreatePreference(
 		Mood:       req.Mood,
 		Budget:     req.Budget,
 		Duration:   req.Duration,
+		Days:       req.Days,
 		Location:   req.Location,
 		TravelDate: req.TravelDate,
 	}
@@ -86,6 +88,7 @@ func (h *PreferenceHandler) UpdatePreference(
 		Mood:       req.Mood,
 		Budget:     req.Budget,
 		Duration:   req.Duration,
+		Days:       req.Days,
 		Location:   req.Location,
 		TravelDate: req.TravelDate,
 	}
