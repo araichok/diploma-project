@@ -8,6 +8,7 @@ type Preference struct {
 	Mood       string
 	Budget     int32
 	Duration   int32
+	Days       int32
 	Location   string
 	TravelDate string
 	CreatedAt  time.Time
