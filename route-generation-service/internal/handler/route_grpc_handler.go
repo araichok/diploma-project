@@ -66,6 +66,7 @@ func mapRouteToProto(route *model.Route) *routepb.Route {
 			Address:       place.Address,
 			Lat:           place.Lat,
 			Lon:           place.Lon,
+			DayNumber:     place.DayNumber,
 			VisitOrder:    place.VisitOrder,
 			EstimatedTime: place.EstimatedTime,
 			EstimatedCost: place.EstimatedCost,
