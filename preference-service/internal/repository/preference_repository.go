@@ -16,8 +16,8 @@ func NewPreferenceRepository(db *sql.DB) *PreferenceRepository {
 func (r *PreferenceRepository) Create(p *model.Preference) (*model.Preference, error) {
 	query := `
 		INSERT INTO preferences 
-		(user_id, mood, budget, duration, location, travel_date)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		(user_id, mood, budget, duration, days, location, travel_date)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -27,6 +27,7 @@ func (r *PreferenceRepository) Create(p *model.Preference) (*model.Preference, e
 		p.Mood,
 		p.Budget,
 		p.Duration,
+		p.Days,
 		p.Location,
 		p.TravelDate,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
@@ -40,7 +41,7 @@ func (r *PreferenceRepository) Create(p *model.Preference) (*model.Preference, e
 
 func (r *PreferenceRepository) GetHistory(userID string) ([]*model.Preference, error) {
 	query := `
-		SELECT id, user_id, mood, budget, duration, location, travel_date, created_at, updated_at
+		SELECT id, user_id, mood, budget, duration, days, location, travel_date, created_at, updated_at
 		FROM preferences
 		WHERE user_id = $1
 		ORDER BY created_at DESC
@@ -63,6 +64,7 @@ func (r *PreferenceRepository) GetHistory(userID string) ([]*model.Preference, e
 			&p.Mood,
 			&p.Budget,
 			&p.Duration,
+			&p.Days,
 			&p.Location,
 			&p.TravelDate,
 			&p.CreatedAt,
@@ -85,10 +87,11 @@ func (r *PreferenceRepository) Update(p *model.Preference) (*model.Preference, e
 		SET mood = $1,
 			budget = $2,
 			duration = $3,
-			location = $4,
-			travel_date = $5,
+			days = $4,
+			location = $5,
+			travel_date = $6,
 			updated_at = CURRENT_TIMESTAMP
-		WHERE id = $6 AND user_id = $7
+			WHERE id = $7 AND user_id = $8
 		RETURNING created_at, updated_at
 	`
 
@@ -97,6 +100,7 @@ func (r *PreferenceRepository) Update(p *model.Preference) (*model.Preference, e
 		p.Mood,
 		p.Budget,
 		p.Duration,
+		p.Days,
 		p.Location,
 		p.TravelDate,
 		p.ID,
