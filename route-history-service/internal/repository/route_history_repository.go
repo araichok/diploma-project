@@ -138,3 +138,16 @@ func (r *RouteHistoryRepository) Delete(id string) error {
 	_, err := r.db.Exec(`DELETE FROM route_histories WHERE id = $1`, id)
 	return err
 }
+
+
+
+func (r *RouteHistoryRepository) CountRoutes() (int, error) {
+	var count int
+
+	err := r.db.QueryRow(`SELECT COUNT(*) FROM route_histories`).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

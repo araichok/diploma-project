@@ -6,11 +6,12 @@ import (
 	adminpb "api-gateway/proto/adminpb"
 	feedbackpb "api-gateway/proto/feedbackpb"
 	notificationpb "api-gateway/proto/notificationpb"
-	routepb "api-gateway/proto/routepb"
 	userpb "api-gateway/proto/userpb"
 
 	"github.com/gin-gonic/gin"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+
+	historypb "api-gateway/proto/historypb"
 )
 
 type AdminHandler struct {
@@ -18,7 +19,7 @@ type AdminHandler struct {
 	feedbackClient feedbackpb.FeedbackServiceClient
 	notifClient    notificationpb.NotificationServiceClient
 	userClient     userpb.UserServiceClient
-	routeClient    routepb.RouteServiceClient
+	historyClient  historypb.RouteHistoryServiceClient
 }
 
 func NewAdminHandler(
@@ -26,14 +27,14 @@ func NewAdminHandler(
 	feedbackClient feedbackpb.FeedbackServiceClient,
 	notifClient notificationpb.NotificationServiceClient,
 	userClient userpb.UserServiceClient,
-	routeClient routepb.RouteServiceClient,
+	historyClient historypb.RouteHistoryServiceClient,
 ) *AdminHandler {
 	return &AdminHandler{
 		client:         client,
 		feedbackClient: feedbackClient,
 		notifClient:    notifClient,
 		userClient:     userClient,
-		routeClient:    routeClient,
+		historyClient:  historyClient,
 	}
 }
 
@@ -87,7 +88,9 @@ func (h *AdminHandler) GetStats(c *gin.Context) {
 		userCount = res.TotalUsers
 	}
 
-	routeCount = 0
+	if res, err := h.historyClient.CountRoutes(c, &historypb.CountRoutesRequest{}); err == nil && res != nil {
+		routeCount = res.TotalRoutes
+	}
 
 	if res, err := h.feedbackClient.GetAllFeedbacks(c, empty); err == nil && res != nil {
 		feedbackCount = int32(len(res.Feedbacks))

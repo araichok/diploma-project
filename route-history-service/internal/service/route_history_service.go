@@ -163,3 +163,20 @@ func (s *RouteHistoryService) CheckRouteCompleted(
 		Status:      history.Status,
 	}, nil
 }
+
+
+
+
+func (s *RouteHistoryService) CountRoutes(
+	ctx context.Context,
+	req *pb.CountRoutesRequest,
+) (*pb.CountRoutesResponse, error) {
+	count, err := s.repo.CountRoutes()
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.CountRoutesResponse{
+		TotalRoutes: int32(count),
+	}, nil
+}
