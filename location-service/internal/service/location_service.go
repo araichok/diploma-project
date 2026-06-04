@@ -64,6 +64,7 @@ func (s *LocationService) FindSuitableLocations(
 				PlaceID: place.PlaceID,
 				Name:    place.Name,
 				Type:    "city_landmark",
+				Address: place.Address,
 				City:    place.City,
 				Lat:     place.Lat,
 				Lon:     place.Lon,
@@ -109,6 +110,7 @@ func (s *LocationService) FindSuitableLocations(
 				PlaceID: place.PlaceID,
 				Name:    place.Name,
 				Type:    normalizePlaceType(place.Name, rule.Category),
+				Address: place.Address,
 				City:    place.City,
 				Lat:     place.Lat,
 				Lon:     place.Lon,
@@ -125,16 +127,6 @@ func (s *LocationService) FindSuitableLocations(
 	}
 
 	return result, nil
-}
-
-func (s *LocationService) GetLocationDetails(
-	placeID string,
-) (*client.PlaceDetails, error) {
-
-	log.Println("GetLocationDetails request:")
-	log.Println("PlaceID:", placeID)
-
-	return client.GetPlaceDetails(placeID)
 }
 
 func normalizePlaceType(
