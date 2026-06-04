@@ -170,7 +170,7 @@ func (s *RouteService) buildRoute(
 			PlaceID:       candidate.location.PlaceId,
 			Name:          candidate.location.Name,
 			Type:          candidate.placeType,
-			Address:       "",
+			Address:       candidate.location.Address,
 			Lat:           candidate.location.Lat,
 			Lon:           candidate.location.Lon,
 			DayNumber:     currentDay,
