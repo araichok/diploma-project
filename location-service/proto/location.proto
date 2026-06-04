@@ -21,12 +21,12 @@ message Location {
   string place_id = 1;
   string name = 2;
   string type = 3;
-  double lat = 4;
-  double lon = 5;
-  string mood = 6;
-  string city = 7;
+  string city = 4;
+  double lat = 5;
+  double lon = 6;
+  string mood = 7;
+  string address = 8;
 }
-
 message FindLocationsResponse {
   repeated Location locations = 1;
 }
