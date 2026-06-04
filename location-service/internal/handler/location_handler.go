@@ -38,6 +38,7 @@ func (h *LocationGrpcHandler) FindSuitableLocations(
 			PlaceId: location.PlaceID,
 			Name:    location.Name,
 			Type:    location.Type,
+			Address: location.Address,
 			City:    location.City,
 			Lat:     location.Lat,
 			Lon:     location.Lon,
@@ -47,26 +48,5 @@ func (h *LocationGrpcHandler) FindSuitableLocations(
 
 	return &locationpb.FindLocationsResponse{
 		Locations: result,
-	}, nil
-}
-
-func (h *LocationGrpcHandler) GetLocationDetails(
-	ctx context.Context,
-	req *locationpb.GetLocationDetailsRequest,
-) (*locationpb.LocationDetailsResponse, error) {
-
-	details, err := h.locationService.GetLocationDetails(req.PlaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &locationpb.LocationDetailsResponse{
-		PlaceId:      details.PlaceID,
-		Name:         details.Name,
-		Address:      details.Address,
-		Website:      details.Website,
-		Phone:        details.Phone,
-		OpeningHours: details.OpeningHours,
-		Description:  details.Description,
 	}, nil
 }
