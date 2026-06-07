@@ -15,12 +15,12 @@ class MapProvider extends ChangeNotifier {
   List<Uint8List?> _stopImages = [];
   bool _isLoading = false;
   bool _isCompleted = false;
-  bool _isMapRefreshing = false;
+  bool _isMapRefreshing = false; // добавлено
   String? _error;
   int _currentStopIndex = 0;
   String _markerColor = '#0066FF';
   String _userId = '';
-  int? _beforeMood; // captured before the walk starts
+  int? _beforeMood;
 
   int? get beforeMood => _beforeMood;
   set beforeMood(int? v) => _beforeMood = v;
@@ -31,7 +31,7 @@ class MapProvider extends ChangeNotifier {
           ? _stopImages[_currentStopIndex]
           : null;
   bool get isLoading => _isLoading;
-  bool get isMapRefreshing => false;
+  bool get isMapRefreshing => _isMapRefreshing; // геттер
   bool get isCompleted => _isCompleted;
   String? get error => _error;
   int get currentStopIndex => _currentStopIndex;
@@ -80,7 +80,6 @@ class MapProvider extends ChangeNotifier {
           _routePath = await _api.fetchRoutePath(_sortedStops);
         }
 
-        // Fetch all stop images in parallel — navigation will be instant
         _stopImages = await Future.wait<Uint8List?>(
           List.generate(_sortedStops.length, (i) async {
             try {
@@ -91,7 +90,6 @@ class MapProvider extends ChangeNotifier {
           }),
         );
 
-        // Record this route as planned in history (best-effort)
         try {
           await _api.createHistory(userId: userId, routeId: _routeData!.routeId);
         } catch (_) {}
@@ -134,7 +132,6 @@ class MapProvider extends ChangeNotifier {
     final centerLng = (minLng + maxLng) / 2;
     final zoom = _calculateZoom(maxLat - minLat, maxLng - minLng, centerLat);
 
-    // Build markers as JSON objects (POST API supports #hex colors directly)
     final markers = <Map<String, dynamic>>[];
     for (int i = 0; i < stops.length; i++) {
       final s = stops[i];
@@ -173,7 +170,6 @@ class MapProvider extends ChangeNotifier {
       const maxPoints = 30;
       final step = max(1, (_routePath!.length / maxPoints).ceil());
       final simplified = _simplifyPath(_routePath!, step: step);
-      // POST API uses {lat, lon} objects and type:"polyline" (not GeoJSON)
       bodyMap['geometries'] = [
         {
           'type': 'polyline',
