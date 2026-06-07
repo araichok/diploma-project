@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 
@@ -13,6 +14,8 @@ class AuthProvider extends ChangeNotifier {
   String? get lastError => _lastError;
 
   final ApiService _api = ApiService();
+
+  static const String _roleKey = 'user_role';
 
   Future<bool> register(String email, String name, String phoneNumber, String password) async {
     _isLoading = true;
@@ -47,11 +50,18 @@ class AuthProvider extends ChangeNotifier {
     try {
       final data = await _api.login(email: email, password: password);
       final userData = data['user'] as Map<String, dynamic>? ?? {};
-      _currentUser = User.fromBackendJson(userData);
+
+      final phone = await _api.getLocalPhone();
+      _currentUser = User.fromBackendJson({...userData, 'phone_number': phone});
+
       final adminStatus = await _api.isAdmin(_currentUser!.id);
       if (adminStatus) {
-        _currentUser = User.fromBackendJson({...userData, 'role': 'admin'});
+        _currentUser = User.fromBackendJson({...userData, 'role': 'admin', 'phone_number': phone});
       }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_roleKey, _currentUser!.role.name);
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -60,6 +70,25 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> restoreSession() async {
+    try {
+      final user = await _api.getProfile(forceRefresh: false);
+      final prefs = await SharedPreferences.getInstance();
+      final savedRole = prefs.getString(_roleKey) ?? 'user';
+      if (savedRole == 'admin') {
+        _currentUser = User.fromBackendJson({
+          ...user.toJson(),
+          'role': 'admin',
+        });
+      } else {
+        _currentUser = user;
+      }
+      notifyListeners();
+    } catch (_) {
+      // no valid session
     }
   }
 
@@ -73,9 +102,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _currentUser = await _api.updateProfile(
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
+        userId:      _currentUser?.id ?? '',
+        firstName:   firstName,
+        lastName:    lastName,
+        email:       email,
         phoneNumber: phoneNumber,
       );
     } catch (e) {
@@ -112,6 +142,8 @@ class AuthProvider extends ChangeNotifier {
       await _api.deleteUser();
       await _api.logout();
       _currentUser = null;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_roleKey);
     } catch (e) {
       _lastError = _cleanError(e.toString());
       rethrow;
@@ -124,6 +156,8 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await _api.logout();
     _currentUser = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_roleKey);
     notifyListeners();
   }
 
