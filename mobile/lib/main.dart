@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
 import 'providers/mood_provider.dart';
 import 'providers/map_provider.dart';
-import 'providers/auth_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/feedback_provider.dart';
 import 'providers/saved_routes_provider.dart';
-import 'screens/emotion_screen.dart';
-import 'screens/preferences_screen.dart';
-import 'screens/map_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/notifications_screen.dart';
+import 'screens/user_main_screen.dart';
+import 'screens/admin_main_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -49,10 +47,21 @@ class MyApp extends StatelessWidget {
         initialRoute: '/login',
         routes: {
           '/login': (context) => const LoginScreen(),
-          '/': (context) => const EmotionScreen(),
-          '/preferences': (context) => const PreferencesScreen(),
-          '/map': (context) => const MapScreen(),
-          '/notifications': (context) => const NotificationsScreen(),
+          '/': (context) => Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              if (auth.isLoading) {
+                return const Scaffold(body: Center(child: CircularProgressIndicator()));
+              }
+              if (auth.currentUser == null) {
+                return const LoginScreen();
+              }
+              if (auth.isAdmin) {
+                return const AdminMainScreen();
+              } else {
+                return const UserMainScreen();
+              }
+            },
+          ),
         },
       ),
     );
