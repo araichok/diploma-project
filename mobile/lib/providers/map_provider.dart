@@ -131,8 +131,6 @@ class MapProvider extends ChangeNotifier {
     }
   }
 
-  /// Called by the stop-details sheet when it resolves an address from Geoapify.
-  /// Updates the stop in _sortedStops so the address is cached for the session.
   void updateStopAddress(String stopId, String address) {
     final idx = _sortedStops.indexWhere((s) => s.id == stopId);
     if (idx < 0 || address.isEmpty) return;
@@ -154,7 +152,6 @@ class MapProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
 
   Future<Uint8List?> _fetchMapImageForStop(int activeIndex) async {
     if (_sortedStops.isEmpty) return null;
