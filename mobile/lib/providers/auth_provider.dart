@@ -14,43 +14,32 @@ class AuthProvider extends ChangeNotifier {
 
   final ApiService _api = ApiService();
 
-  // email, name, phone kept for signature compatibility with LoginScreen
-  Future<bool> register(String email, String name, String phone, String password) async {
+  Future<bool> register(String email, String name, String phoneNumber, String password) async {
     _isLoading = true;
     _lastError = null;
     notifyListeners();
     try {
       final parts = name.trim().split(RegExp(r'\s+'));
       final firstName = parts.first;
-      // Backend requires last_name min=2; fall back to firstName if not provided
       final lastName = parts.length > 1 ? parts.skip(1).join(' ') : firstName;
       await _api.register(
         firstName: firstName,
         lastName: lastName,
         email: email,
         password: password,
+        phoneNumber: phoneNumber,
       );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      _lastError = _cleanGrpcError(e.toString());
+      _lastError = _cleanError(e.toString());
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  // gRPC errors arrive as "Exception: rpc error: code = X desc = <message>"
-  String _cleanGrpcError(String raw) {
-    final descMatch = RegExp(r'desc = (.+)$').firstMatch(raw);
-    if (descMatch != null) return descMatch.group(1)!;
-    final exMatch = RegExp(r'Exception: (.+)$').firstMatch(raw);
-    if (exMatch != null) return exMatch.group(1)!;
-    return raw;
-  }
-
-  // name param kept for signature compatibility with LoginScreen (unused by backend)
   Future<bool> login(String email, String password, String name) async {
     _isLoading = true;
     _lastError = null;
@@ -59,21 +48,76 @@ class AuthProvider extends ChangeNotifier {
       final data = await _api.login(email: email, password: password);
       final userData = data['user'] as Map<String, dynamic>? ?? {};
       _currentUser = User.fromBackendJson(userData);
-
-      // admin-service is the source of truth for admin status
       final adminStatus = await _api.isAdmin(_currentUser!.id);
       if (adminStatus) {
         _currentUser = User.fromBackendJson({...userData, 'role': 'admin'});
       }
-
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      _lastError = _cleanGrpcError(e.toString());
+      _lastError = _cleanError(e.toString());
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phoneNumber,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _currentUser = await _api.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phoneNumber: phoneNumber,
+      );
+    } catch (e) {
+      _lastError = _cleanError(e.toString());
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _api.changePassword(
+        userId: _currentUser!.id,
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+    } catch (e) {
+      _lastError = _cleanError(e.toString());
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _api.deleteUser();
+      await _api.logout();
+      _currentUser = null;
+    } catch (e) {
+      _lastError = _cleanError(e.toString());
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -81,5 +125,13 @@ class AuthProvider extends ChangeNotifier {
     await _api.logout();
     _currentUser = null;
     notifyListeners();
+  }
+
+  String _cleanError(String raw) {
+    final descMatch = RegExp(r'desc = (.+)$').firstMatch(raw);
+    if (descMatch != null) return descMatch.group(1)!;
+    final exMatch = RegExp(r'Exception: (.+)$').firstMatch(raw);
+    if (exMatch != null) return exMatch.group(1)!;
+    return raw;
   }
 }
