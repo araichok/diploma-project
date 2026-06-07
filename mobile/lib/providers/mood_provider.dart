@@ -13,58 +13,37 @@ enum TravelCategory {
 extension TravelCategoryExtension on TravelCategory {
   String get displayName {
     switch (this) {
-      case TravelCategory.calm:
-        return 'Calm';
-      case TravelCategory.happy:
-        return 'Happy';
-      case TravelCategory.romantic:
-        return 'Romantic';
-      case TravelCategory.active:
-        return 'Active';
-      case TravelCategory.cultural:
-        return 'Cultural';
-      case TravelCategory.food:
-        return 'Food';
-      case TravelCategory.shopping:
-        return 'Shopping';
+      case TravelCategory.calm: return 'Calm';
+      case TravelCategory.happy: return 'Happy';
+      case TravelCategory.romantic: return 'Romantic';
+      case TravelCategory.active: return 'Active';
+      case TravelCategory.cultural: return 'Cultural';
+      case TravelCategory.food: return 'Food';
+      case TravelCategory.shopping: return 'Shopping';
     }
   }
 
   IconData get icon {
     switch (this) {
-      case TravelCategory.calm:
-        return Icons.spa;
-      case TravelCategory.happy:
-        return Icons.emoji_emotions;
-      case TravelCategory.romantic:
-        return Icons.favorite;
-      case TravelCategory.active:
-        return Icons.directions_run;
-      case TravelCategory.cultural:
-        return Icons.museum;
-      case TravelCategory.food:
-        return Icons.restaurant;
-      case TravelCategory.shopping:
-        return Icons.shopping_bag;
+      case TravelCategory.calm: return Icons.spa;
+      case TravelCategory.happy: return Icons.emoji_emotions;
+      case TravelCategory.romantic: return Icons.favorite;
+      case TravelCategory.active: return Icons.directions_run;
+      case TravelCategory.cultural: return Icons.museum;
+      case TravelCategory.food: return Icons.restaurant;
+      case TravelCategory.shopping: return Icons.shopping_bag;
     }
   }
 
   Color get color {
     switch (this) {
-      case TravelCategory.calm:
-        return Colors.teal;
-      case TravelCategory.happy:
-        return Colors.amber;
-      case TravelCategory.romantic:
-        return Colors.redAccent;
-      case TravelCategory.active:
-        return Colors.orange;
-      case TravelCategory.cultural:
-        return Colors.purple;
-      case TravelCategory.food:
-        return Colors.deepOrange;
-      case TravelCategory.shopping:
-        return Colors.pink;
+      case TravelCategory.calm: return Colors.teal;
+      case TravelCategory.happy: return Colors.amber;
+      case TravelCategory.romantic: return Colors.redAccent;
+      case TravelCategory.active: return Colors.orange;
+      case TravelCategory.cultural: return Colors.purple;
+      case TravelCategory.food: return Colors.deepOrange;
+      case TravelCategory.shopping: return Colors.pink;
     }
   }
 }
