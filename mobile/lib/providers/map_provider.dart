@@ -20,7 +20,8 @@ class MapProvider extends ChangeNotifier {
   int _currentStopIndex = 0;
   String _markerColor = '#0066FF';
   String _userId = '';
-  int? _beforeMood; // captured before the walk starts
+  int? _beforeMood;
+  bool _isGenerating = false;
 
   int? get beforeMood => _beforeMood;
   set beforeMood(int? v) => _beforeMood = v;
@@ -31,15 +32,15 @@ class MapProvider extends ChangeNotifier {
           ? _stopImages[_currentStopIndex]
           : null;
   bool get isLoading => _isLoading;
-  bool get isMapRefreshing => false;
+  bool get isMapRefreshing => _isMapRefreshing;
   bool get isCompleted => _isCompleted;
   String? get error => _error;
   int get currentStopIndex => _currentStopIndex;
   List<RouteStop> get sortedStops => _sortedStops;
   RouteStop? get currentStop =>
       _sortedStops.isNotEmpty ? _sortedStops[_currentStopIndex] : null;
-  bool get isLastStop => _sortedStops.isNotEmpty &&
-      _currentStopIndex >= _sortedStops.length - 1;
+  bool get isLastStop =>
+      _sortedStops.isNotEmpty && _currentStopIndex >= _sortedStops.length - 1;
 
   final ApiService _api = ApiService();
 
@@ -51,6 +52,11 @@ class MapProvider extends ChangeNotifier {
     required double budget,
     String markerColor = '#0066FF',
   }) async {
+    if (_isGenerating) {
+      debugPrint('[MapProvider] generateRoute already running, skipping');
+      return;
+    }
+    _isGenerating = true;
     _isLoading = true;
     _isCompleted = false;
     _error = null;
@@ -70,6 +76,10 @@ class MapProvider extends ChangeNotifier {
         category: category,
         duration: duration,
         budget: budget,
+      ).timeout(
+        const Duration(minutes: 2),
+        onTimeout: () =>
+            throw Exception('Route generation timed out. Please try again.'),
       );
 
       if (_routeData != null) {
@@ -80,7 +90,6 @@ class MapProvider extends ChangeNotifier {
           _routePath = await _api.fetchRoutePath(_sortedStops);
         }
 
-        // Fetch all stop images in parallel — navigation will be instant
         _stopImages = await Future.wait<Uint8List?>(
           List.generate(_sortedStops.length, (i) async {
             try {
@@ -91,7 +100,6 @@ class MapProvider extends ChangeNotifier {
           }),
         );
 
-        // Record this route as planned in history (best-effort)
         try {
           await _api.createHistory(userId: userId, routeId: _routeData!.routeId);
         } catch (_) {}
@@ -100,6 +108,7 @@ class MapProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
+      _isGenerating = false;
       notifyListeners();
     }
   }
@@ -122,6 +131,28 @@ class MapProvider extends ChangeNotifier {
     }
   }
 
+  void updateStopAddress(String stopId, String address) {
+    final idx = _sortedStops.indexWhere((s) => s.id == stopId);
+    if (idx < 0 || address.isEmpty) return;
+    _sortedStops = List.of(_sortedStops);
+    _sortedStops[idx] = _sortedStops[idx].withAddress(address);
+    notifyListeners();
+  }
+
+  void clearRoute() {
+    _routeData = null;
+    _sortedStops = [];
+    _routePath = null;
+    _stopImages = [];
+    _error = null;
+    _currentStopIndex = 0;
+    _isCompleted = false;
+    _isGenerating = false;
+    _beforeMood = null;
+    notifyListeners();
+  }
+
+
   Future<Uint8List?> _fetchMapImageForStop(int activeIndex) async {
     if (_sortedStops.isEmpty) return null;
 
@@ -134,7 +165,6 @@ class MapProvider extends ChangeNotifier {
     final centerLng = (minLng + maxLng) / 2;
     final zoom = _calculateZoom(maxLat - minLat, maxLng - minLng, centerLat);
 
-    // Build markers as JSON objects (POST API supports #hex colors directly)
     final markers = <Map<String, dynamic>>[];
     for (int i = 0; i < stops.length; i++) {
       final s = stops[i];
@@ -173,7 +203,6 @@ class MapProvider extends ChangeNotifier {
       const maxPoints = 30;
       final step = max(1, (_routePath!.length / maxPoints).ceil());
       final simplified = _simplifyPath(_routePath!, step: step);
-      // POST API uses {lat, lon} objects and type:"polyline" (not GeoJSON)
       bodyMap['geometries'] = [
         {
           'type': 'polyline',
@@ -192,16 +221,13 @@ class MapProvider extends ChangeNotifier {
       'https://maps.geoapify.com/v1/staticmap?apiKey=${GeoapifyConfig.apiKey}',
     );
 
-    debugPrint('[MapProvider] Static map POST body: ${json.encode(bodyMap).substring(0, min(300, json.encode(bodyMap).length))}');
-    final response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(bodyMap),
-    ).timeout(const Duration(seconds: 15));
-    debugPrint('[MapProvider] Static map status: ${response.statusCode}');
+    final response = await http
+        .post(uri,
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(bodyMap))
+        .timeout(const Duration(seconds: 15));
     if (response.statusCode == 200) return response.bodyBytes;
-    debugPrint('[MapProvider] Static map error body: ${response.body}');
-    throw Exception('Static map failed: ${response.statusCode} body=${response.body.substring(0, response.body.length.clamp(0, 200))}');
+    throw Exception('Static map failed: ${response.statusCode}');
   }
 
   List<List<double>> _simplifyPath(List<List<double>> path, {int step = 5}) {
@@ -224,17 +250,5 @@ class MapProvider extends ChangeNotifier {
     final cosLat = cos(centerLat * pi / 180);
     final zoomLat = log(imageSize * 360 * cosLat / (tileSize * effLat)) / ln2;
     return min(zoomLng, zoomLat).floor().clamp(1, 16);
-  }
-
-  void clearRoute() {
-    _routeData = null;
-    _sortedStops = [];
-    _routePath = null;
-    _stopImages = [];
-    _error = null;
-    _currentStopIndex = 0;
-    _isCompleted = false;
-    _beforeMood = null;
-    notifyListeners();
   }
 }

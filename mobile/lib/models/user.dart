@@ -5,7 +5,7 @@ class User {
   final String email;
   final String name;
   final UserRole role;
-  final String phone;
+  final String phoneNumber;
   final DateTime createdAt;
 
   User({
@@ -13,42 +13,34 @@ class User {
     required this.email,
     required this.name,
     this.role = UserRole.user,
-    this.phone = '',
+    this.phoneNumber = '',
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  // Parses the response from POST /login and GET /profile
   factory User.fromBackendJson(Map<String, dynamic> json) {
     final firstName = json['first_name'] as String? ?? '';
     final lastName = json['last_name'] as String? ?? '';
+    final name = '$firstName $lastName'.trim();
+    final roleStr = json['role'] as String? ?? 'user';
     return User(
-      id: json['id'] as String? ?? '',
-      email: json['email'] as String? ?? '',
-      name: '$firstName $lastName'.trim(),
-      role: (json['role'] as String?) == 'admin' ? UserRole.admin : UserRole.user,
+      id: json['id']?.toString() ?? '',
+      email: json['email'] ?? '',
+      name: name.isEmpty ? (json['name'] ?? '') : name,
+      role: roleStr.toLowerCase() == 'admin' ? UserRole.admin : UserRole.user,
+      phoneNumber: json['phone_number'] as String? ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at']) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'email': email,
-    'name': name,
-    'role': role.name,
-    'phone': phone,
-    'createdAt': createdAt.toIso8601String(),
-  };
-
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'] as String? ?? '',
-    email: json['email'] as String? ?? '',
-    name: json['name'] as String? ?? '',
-    role: UserRole.values.firstWhere(
-      (e) => e.name == json['role'],
-      orElse: () => UserRole.user,
-    ),
-    phone: json['phone'] as String? ?? '',
-    createdAt: json['createdAt'] != null
-        ? DateTime.tryParse(json['createdAt']) ?? DateTime.now()
-        : DateTime.now(),
-  );
+        'id': id,
+        'email': email,
+        'first_name': name.split(' ').first,
+        'last_name': name.contains(' ') ? name.substring(name.indexOf(' ') + 1) : '',
+        'role': role.name,
+        'phone_number': phoneNumber,
+        'created_at': createdAt.toIso8601String(),
+      };
 }

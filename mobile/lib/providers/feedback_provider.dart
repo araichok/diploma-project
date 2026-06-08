@@ -27,7 +27,6 @@ class FeedbackProvider extends ChangeNotifier {
     }
   }
 
-  // Sends to backend and updates local cache for immediate UI update
   Future<bool> submitFeedback({
     required String userId,
     required String userName,

@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/mood.dart';
+import '../providers/mood_provider.dart'; // для TravelCategory
 
 class BreathingExerciseScreen extends StatefulWidget {
-  final Mood mood;
+  final TravelCategory category;
   final String location;
 
   const BreathingExerciseScreen({
     super.key,
-    required this.mood,
+    required this.category,
     required this.location,
   });
 
@@ -42,8 +42,8 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
   }
   
   void _initBreathingPattern() {
-    switch (widget.mood) {
-      case Mood.romantic:
+    switch (widget.category) {
+      case TravelCategory.romantic:
         _breathSteps = [
           BreathStep('Inhale', 'Feel the love', 4, Colors.pink),
           BreathStep('Hold', 'Embrace the warmth', 4, Colors.redAccent),
@@ -52,7 +52,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
         _currentColor = Colors.pink;
         break;
         
-      case Mood.adventurous:
+      case TravelCategory.active:
         _breathSteps = [
           BreathStep('Inhale', 'Prepare for adventure', 3, Colors.green),
           BreathStep('Hold', 'Feel the excitement', 2, Colors.lightGreen),
@@ -61,25 +61,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
         _currentColor = Colors.green;
         break;
         
-      case Mood.thrilling:
-        _breathSteps = [
-          BreathStep('Inhale', 'Energy building', 3, Colors.orange),
-          BreathStep('Hold', 'Anticipation peaks', 1, Colors.deepOrange),
-          BreathStep('Exhale', 'Release with power', 3, Colors.red),
-        ];
-        _currentColor = Colors.orange;
-        break;
-        
-      case Mood.curious:
-        _breathSteps = [
-          BreathStep('Inhale', 'Open to discovery', 5, Colors.purple),
-          BreathStep('Hold', 'Embrace the wonder', 3, Colors.deepPurple),
-          BreathStep('Exhale', 'Let curiosity flow', 5, Colors.indigo),
-        ];
-        _currentColor = Colors.purple;
-        break;
-        
-      case Mood.relaxed:
+      case TravelCategory.calm:
         _breathSteps = [
           BreathStep('Inhale', 'Peace flows in', 6, Colors.blue),
           BreathStep('Hold', 'Stillness', 4, Colors.lightBlue),
@@ -88,14 +70,40 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
         _currentColor = Colors.blue;
         break;
         
-      case Mood.happy:
-      default:
+      case TravelCategory.cultural:
+        _breathSteps = [
+          BreathStep('Inhale', 'Open to discovery', 5, Colors.purple),
+          BreathStep('Hold', 'Embrace the wonder', 3, Colors.deepPurple),
+          BreathStep('Exhale', 'Let curiosity flow', 5, Colors.indigo),
+        ];
+        _currentColor = Colors.purple;
+        break;
+        
+      case TravelCategory.happy:
         _breathSteps = [
           BreathStep('Inhale', 'Joy fills your heart', 4, Colors.amber),
           BreathStep('Hold', 'Smile', 2, Colors.yellow),
           BreathStep('Exhale', 'Spread happiness', 4, Colors.orange),
         ];
         _currentColor = Colors.amber;
+        break;
+        
+      case TravelCategory.food:
+        _breathSteps = [
+          BreathStep('Inhale', 'Enjoy the aroma', 4, Colors.deepOrange),
+          BreathStep('Hold', 'Savor the moment', 3, Colors.orange),
+          BreathStep('Exhale', 'Release satisfaction', 5, Colors.brown),
+        ];
+        _currentColor = Colors.deepOrange;
+        break;
+        
+      case TravelCategory.shopping:
+        _breathSteps = [
+          BreathStep('Inhale', 'Energy builds', 3, Colors.pink),
+          BreathStep('Hold', 'Excitement peaks', 2, Colors.pinkAccent),
+          BreathStep('Exhale', 'Calm down', 5, Colors.purple),
+        ];
+        _currentColor = Colors.pink;
         break;
     }
     
@@ -213,7 +221,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.mood.displayName} Breathing'),
+        title: Text('${widget.category.displayName} Breathing'),
         backgroundColor: _currentColor,
         elevation: 0,
         leading: IconButton(
