@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
@@ -86,7 +87,7 @@ func (s *RouteService) GenerateRouteFromPreference(
 		route.Mood,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create route history: %w", err)
+		log.Printf("failed to create route history: %v", err)
 	}
 
 	return route, nil
