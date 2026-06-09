@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net"
 	"user-service/internal/auth"
@@ -30,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer conn.Close(context.Background())
+	defer conn.Close()
 
 	// Redis
 	redisClient := cache.NewRedisClient(cfg)
