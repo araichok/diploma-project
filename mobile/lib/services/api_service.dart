@@ -96,12 +96,17 @@ class ApiService {
 
   Future<String> getLocalPhone({String? email}) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_phoneKey(email ?? _currentEmail ?? '')) ?? '';
+    // Try per-user key first, then fallback to legacy key
+    final key = _phoneKey(email ?? _currentEmail ?? '');
+    return prefs.getString(key) ??
+           prefs.getString('local_phone_number') ?? '';
   }
 
   Future<void> saveLocalPhone(String phone, {String? email}) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_phoneKey(email ?? _currentEmail ?? ''), phone);
+    final key = _phoneKey(email ?? _currentEmail ?? '');
+    await prefs.setString(key, phone);
+    await prefs.setString('local_phone_number', phone); // legacy fallback
   }
 
   Future<Map<String, dynamic>> register({
@@ -282,13 +287,25 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getAdminStats() async {
-    try {
-      final res = await _req(() => http.get(Uri.parse('$_baseUrl/admin/stats'), headers: _authHeaders)
-          .timeout(const Duration(seconds: 15)));
-      if (res.statusCode == 200) return _json(res);
-    } catch (_) {}
-    return {};
+    final res = await _req(() => http
+        .get(Uri.parse('$_baseUrl/admin/stats'), headers: _authHeaders)
+        .timeout(const Duration(seconds: 15)));
+
+    if (res.statusCode != 200) {
+      // Throw so the panel can show an error state (not silently show 0)
+      final body = _json(res);
+      throw Exception(body['error'] ?? 'Failed to load stats (HTTP ${res.statusCode})');
+    }
+
+    final data = _json(res);
+    return {
+      'total_users':         data['total_users']         ?? 0,
+      'total_routes':        data['total_routes']        ?? 0,
+      'total_feedbacks':     data['total_feedbacks']     ?? 0,
+      'total_notifications': data['total_notifications'] ?? 0,
+    };
   }
+
 
   Future<int> countRoutesForUser(String userId) async {
     try {
