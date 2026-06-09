@@ -11,6 +11,44 @@ import 'feedback_screen.dart';
 const _moodEmojis = ['😞', '😕', '😐', '🙂', '😄'];
 const _moodLabels = ['Bad', 'Not great', 'Neutral', 'Good', 'Great'];
 
+
+String _fmtDuration(int hours) {
+  if (hours <= 0) return '';
+  return hours == 1 ? '1 hr' : '$hours hrs';
+}
+
+List<List<RouteStop>> _groupByDay(List<RouteStop> stops) {
+  const hoursPerDay = 8;
+  final days = <List<RouteStop>>[];
+  var day = <RouteStop>[];
+  var used = 0;
+  for (final s in stops) {
+    final h = s.estimatedTime > 0 ? s.estimatedTime : 1;
+    if (day.isNotEmpty && used + h > hoursPerDay) {
+      days.add(day);
+      day = [];
+      used = 0;
+    }
+    day.add(s);
+    used += h;
+  }
+  if (day.isNotEmpty) days.add(day);
+  return days;
+}
+
+int _dayOf(List<RouteStop> all, int idx) {
+  const hoursPerDay = 8;
+  var day = 1;
+  var used = 0;
+  for (int i = 0; i <= idx && i < all.length; i++) {
+    final h = all[i].estimatedTime > 0 ? all[i].estimatedTime : 1;
+    if (i > 0 && used + h > hoursPerDay) { day++; used = 0; }
+    used += h;
+  }
+  return day;
+}
+
+
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
   @override
@@ -55,6 +93,14 @@ class _MapScreenState extends State<MapScreen> {
                 onPressed: () => Navigator.pop(context)),
             backgroundColor: color,
             foregroundColor: Colors.white,
+            actions: [
+              if (mp.routeData != null && mp.sortedStops.isNotEmpty)
+                IconButton(
+                  tooltip: 'Day schedule',
+                  icon: const Icon(Icons.calendar_view_day_outlined),
+                  onPressed: () => _showSchedule(context, mp, mood, color),
+                ),
+            ],
           ),
           body: _buildBody(context, mp, mood),
         );
@@ -68,27 +114,30 @@ class _MapScreenState extends State<MapScreen> {
       return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         CircularProgressIndicator(color: color),
         const SizedBox(height: 20),
-        const Text('Generating your route…', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        const Text('Generating your route…',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
-        Text('This may take up to 2 minutes', style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+        Text('This may take up to 2 minutes',
+            style: TextStyle(fontSize: 13, color: Colors.grey[500])),
       ]));
     }
     if (mp.error != null && mp.routeData == null) {
-      return Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+      return Center(child: Padding(padding: const EdgeInsets.all(24),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
-          const Text('Failed to generate route', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Failed to generate route',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text(mp.error!, style: const TextStyle(fontSize: 13, color: Colors.grey), textAlign: TextAlign.center),
+          Text(mp.error!, style: const TextStyle(fontSize: 13, color: Colors.grey),
+              textAlign: TextAlign.center),
           const SizedBox(height: 20),
           ElevatedButton.icon(
               onPressed: () => Navigator.pop(ctx),
               icon: const Icon(Icons.arrow_back),
               label: const Text('Go Back')),
-        ],
-      )));
+        ]),
+      ));
     }
     if (mp.routeData == null || mp.sortedStops.isEmpty) {
       if (mp.error == null) {
@@ -98,24 +147,40 @@ class _MapScreenState extends State<MapScreen> {
       }
       return const Center(child: Text('No route data available'));
     }
-    return _buildRouteContent(ctx, mp, mood);
+    return _buildContent(ctx, mp, mood);
   }
 
-  Widget _buildRouteContent(BuildContext ctx, MapProvider mp, MoodProvider mood) {
-    final stops = mp.sortedStops;
+  Widget _buildContent(BuildContext ctx, MapProvider mp, MoodProvider mood) {
+    final stops   = mp.sortedStops;
     final current = mp.currentStop;
-    final color = mood.selectedCategory?.color ?? Colors.blue;
+    final color   = mood.selectedCategory?.color ?? Colors.blue;
+    final days    = _groupByDay(stops);
+    final currentDay = _dayOf(stops, mp.currentStopIndex);
 
     return Column(children: [
-      // ── header chips ────────────────────────────────────────────────────
+
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         color: color.withOpacity(0.1),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-          Chip(label: Text(mood.selectedCategory?.displayName ?? ''),
-              backgroundColor: color, labelStyle: const TextStyle(color: Colors.white, fontSize: 12)),
-          Chip(label: Text('Stop ${mp.currentStopIndex + 1} of ${stops.length}'),
-              backgroundColor: Colors.grey[200], labelStyle: const TextStyle(fontSize: 12)),
+          Chip(
+            label: Text(mood.selectedCategory?.displayName ?? ''),
+            backgroundColor: color,
+            labelStyle: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+          Chip(
+            label: Text('Stop ${mp.currentStopIndex + 1}/${stops.length}'),
+            backgroundColor: Colors.grey[200],
+            labelStyle: const TextStyle(fontSize: 12),
+          ),
+          if (days.length > 1)
+            Chip(
+              avatar: Icon(Icons.wb_sunny_outlined, size: 13,
+                  color: Colors.white.withOpacity(0.9)),
+              label: Text('Day $currentDay/${days.length}'),
+              backgroundColor: color.withOpacity(0.8),
+              labelStyle: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
         ]),
       ),
 
@@ -129,7 +194,8 @@ class _MapScreenState extends State<MapScreen> {
                 Text('Map unavailable', style: TextStyle(color: Colors.grey[600])),
               ])),
         if (mp.isMapRefreshing)
-          Container(color: Colors.black26, child: const Center(child: CircularProgressIndicator())),
+          Container(color: Colors.black26,
+              child: const Center(child: CircularProgressIndicator())),
       ])),
 
       if (current != null)
@@ -161,7 +227,8 @@ class _MapScreenState extends State<MapScreen> {
                   if (current.estimatedTime > 0) ...[
                     const Icon(Icons.schedule, size: 12, color: Colors.blueGrey),
                     const SizedBox(width: 3),
-                    Text('${current.estimatedTime} min',
+                    // ✅ FIX: hours not minutes
+                    Text(_fmtDuration(current.estimatedTime),
                         style: const TextStyle(fontSize: 11, color: Colors.blueGrey)),
                     const SizedBox(width: 10),
                   ],
@@ -178,7 +245,6 @@ class _MapScreenState extends State<MapScreen> {
           ]),
         ),
 
-      // ── action buttons ───────────────────────────────────────────────────
       Container(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: mp.isCompleted
@@ -186,14 +252,14 @@ class _MapScreenState extends State<MapScreen> {
             : _navButtons(ctx, mp, mood, color),
       ),
 
-      // ── horizontal stops list ────────────────────────────────────────────
-      _stopsList(ctx, mp, mood),
+      // ── Horizontal stops strip with day separators ────────────────────
+      _stopsList(ctx, mp, mood, days),
     ]);
   }
 
   Widget _navButtons(BuildContext ctx, MapProvider mp, MoodProvider mood, Color color) {
     final isLast = mp.isLastStop;
-    final busy = mp.isMapRefreshing;
+    final busy   = mp.isMapRefreshing;
     return Row(children: [
       Expanded(child: OutlinedButton.icon(
           onPressed: busy ? null : () => Navigator.pop(ctx),
@@ -225,7 +291,8 @@ class _MapScreenState extends State<MapScreen> {
       Expanded(child: ElevatedButton.icon(
         onPressed: () => Navigator.pushReplacement(ctx, MaterialPageRoute(
             builder: (_) => FeedbackScreen(
-                routeId: mp.routeData!.routeId, routeName: mp.routeData!.routeName))),
+                routeId: mp.routeData!.routeId,
+                routeName: mp.routeData!.routeName))),
         icon: const Icon(Icons.star), label: const Text('Rate Route'),
         style: ElevatedButton.styleFrom(
             backgroundColor: Colors.amber[700], foregroundColor: Colors.white),
@@ -237,65 +304,293 @@ class _MapScreenState extends State<MapScreen> {
     final ok = await mp.completeRoute();
     if (!mounted) return;
     if (!ok) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-        content: Text('Could not complete route. Try again.'), backgroundColor: Colors.red));
+        content: Text('Could not complete route. Try again.'),
+        backgroundColor: Colors.red));
   }
 
-  // ── Horizontal stops strip ─────────────────────────────────────────────────
-  Widget _stopsList(BuildContext ctx, MapProvider mp, MoodProvider mood) {
-    final stops = mp.sortedStops;
-    final color = mood.selectedCategory?.color ?? Colors.blue;
+  Widget _stopsList(BuildContext ctx, MapProvider mp, MoodProvider mood,
+      List<List<RouteStop>> days) {
+    final stops    = mp.sortedStops;
+    final color    = mood.selectedCategory?.color ?? Colors.blue;
+    final multiDay = days.length > 1;
+
+    final items = <_StripItem>[];
+    int g = 0;
+    for (int d = 0; d < days.length; d++) {
+      if (multiDay) items.add(_StripItem.header(d + 1));
+      for (final s in days[d]) { items.add(_StripItem.stop(s, g++)); }
+    }
+
     return Container(
       height: 140,
       decoration: BoxDecoration(color: Colors.white, boxShadow: [
-        BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, -4)),
+        BoxShadow(color: Colors.black.withOpacity(0.08),
+            blurRadius: 8, offset: const Offset(0, -4)),
       ]),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(10),
-        itemCount: stops.length,
-        itemBuilder: (_, index) {
-          final stop   = stops[index];
-          final isDone   = index < mp.currentStopIndex;
-          final isActive = index == mp.currentStopIndex;
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        itemCount: items.length,
+        itemBuilder: (_, i) {
+          final item = items[i];
+          if (item.isHeader) {
+            return Container(
+              width: 52,
+              margin: const EdgeInsets.only(right: 8),
+              alignment: Alignment.center,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                decoration: BoxDecoration(
+                    color: color, borderRadius: BorderRadius.circular(20)),
+                child: Text('Day\n${item.day}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 11,
+                        fontWeight: FontWeight.bold, height: 1.2)),
+              ),
+            );
+          }
+
+          final stop    = item.stop!;
+          final idx     = item.globalIndex;
+          final isDone  = idx < mp.currentStopIndex;
+          final isNow   = idx == mp.currentStopIndex;
+
           return GestureDetector(
-            onTap: () => _showStopDetails(ctx, stop, index + 1, isDone, isActive, color, mp),
+            onTap: () => _showStopDetails(ctx, stop, idx + 1, isDone, isNow, color, mp),
             child: Container(
-              width: 120,
-              margin: const EdgeInsets.only(right: 10),
+              width: 110,
+              margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                color: isDone ? Colors.grey[100] : isActive ? color.withOpacity(0.15) : color.withOpacity(0.05),
+                color: isDone ? Colors.grey[100] : isNow
+                    ? color.withOpacity(0.15) : color.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: isDone ? Colors.grey[300]! : isActive ? color : color.withOpacity(0.25),
-                    width: isActive ? 2 : 1),
+                    color: isDone ? Colors.grey[300]! : isNow
+                        ? color : color.withOpacity(0.25),
+                    width: isNow ? 2 : 1),
               ),
               padding: const EdgeInsets.all(8),
               child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                 CircleAvatar(
-                  backgroundColor: isDone ? Colors.grey : isActive ? color : color.withOpacity(0.5),
-                  radius: 14,
+                  backgroundColor: isDone ? Colors.grey
+                      : isNow ? color : color.withOpacity(0.5),
+                  radius: 13,
                   child: isDone
-                      ? const Icon(Icons.check, color: Colors.white, size: 14)
-                      : Text('${index + 1}',
-                          style: const TextStyle(color: Colors.white, fontSize: 11)),
+                      ? const Icon(Icons.check, color: Colors.white, size: 13)
+                      : Text('${idx + 1}',
+                          style: const TextStyle(color: Colors.white, fontSize: 10)),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Text(stop.name,
                     style: TextStyle(
                         fontSize: 10,
-                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isNow ? FontWeight.bold : FontWeight.normal,
                         color: isDone ? Colors.grey[500] : Colors.black87),
                     textAlign: TextAlign.center, maxLines: 2,
                     overflow: TextOverflow.ellipsis),
-                if (stop.address.isNotEmpty)
-                  Text(stop.address,
-                      style: TextStyle(fontSize: 9, color: Colors.grey[400]),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center),
+                // ✅ FIX: hours not minutes in strip card
+                if (stop.estimatedTime > 0)
+                  Text(_fmtDuration(stop.estimatedTime),
+                      style: TextStyle(fontSize: 9, color: Colors.grey[400])),
               ]),
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showSchedule(BuildContext ctx, MapProvider mp, MoodProvider mood, Color color) {
+    final stops = mp.sortedStops;
+    final days  = _groupByDay(stops);
+
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.35,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (_, ctrl) => Column(children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Center(child: Container(width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2)))),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+            child: Row(children: [
+              Icon(Icons.calendar_view_day_outlined, color: color, size: 22),
+              const SizedBox(width: 10),
+              Text(
+                'Schedule — ${days.length} day${days.length > 1 ? 's' : ''}',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ]),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView.builder(
+              controller: ctrl,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              itemCount: days.length,
+              itemBuilder: (_, di) {
+                final dayStops = days[di];
+                final dayHours = dayStops.fold<int>(
+                    0, (s, st) => s + (st.estimatedTime > 0 ? st.estimatedTime : 1));
+                int startG = 0;
+                for (int d = 0; d < di; d++) startG += days[d].length;
+
+                return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (di > 0) const SizedBox(height: 16),
+                  // Day header bar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                        color: color, borderRadius: BorderRadius.circular(12)),
+                    child: Row(children: [
+                      const Icon(Icons.wb_sunny_outlined,
+                          color: Colors.white, size: 16),
+                      const SizedBox(width: 8),
+                      Text('Day ${di + 1}',
+                          style: const TextStyle(color: Colors.white,
+                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      const Spacer(),
+                      Text(
+                        '${dayStops.length} stop${dayStops.length > 1 ? 's' : ''}'
+                        ' · ${_fmtDuration(dayHours)}',
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(height: 8),
+                  // Stop rows with timeline
+                  ...dayStops.asMap().entries.map((e) {
+                    final li   = e.key;
+                    final stop = e.value;
+                    final gi   = startG + li;
+                    final done = gi < mp.currentStopIndex;
+                    final now  = gi == mp.currentStopIndex;
+                    final last = li == dayStops.length - 1;
+
+                    return IntrinsicHeight(
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        // Timeline
+                        SizedBox(width: 40, child: Column(children: [
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundColor: done ? Colors.grey[300]
+                                : now ? color : color.withOpacity(0.25),
+                            child: done
+                                ? Icon(Icons.check, size: 14, color: Colors.grey[600])
+                                : Text('${gi + 1}',
+                                    style: TextStyle(
+                                        color: now ? Colors.white : color,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold)),
+                          ),
+                          if (!last)
+                            Expanded(child: Container(
+                                width: 2, color: color.withOpacity(0.2))),
+                        ])),
+                        const SizedBox(width: 12),
+                        // Card
+                        Expanded(child: GestureDetector(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            _showStopDetails(
+                                ctx, stop, gi + 1, done, now, color, mp);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: now ? color.withOpacity(0.08) : Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: now ? color.withOpacity(0.4) : Colors.grey[200]!,
+                                  width: now ? 1.5 : 1),
+                            ),
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Row(children: [
+                                Expanded(child: Text(stop.name,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: done ? Colors.grey[500] : Colors.black87),
+                                    maxLines: 2, overflow: TextOverflow.ellipsis)),
+                                if (now)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                        color: color, borderRadius: BorderRadius.circular(10)),
+                                    child: const Text('Now',
+                                        style: TextStyle(color: Colors.white,
+                                            fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                                if (done)
+                                  Icon(Icons.check_circle_outline,
+                                      size: 16, color: Colors.grey[400]),
+                              ]),
+                              const SizedBox(height: 4),
+                              Row(children: [
+                                if (stop.type.isNotEmpty) ...[
+                                  Icon(Icons.category_outlined,
+                                      size: 11, color: Colors.grey[400]),
+                                  const SizedBox(width: 3),
+                                  Text(_fmtType(stop.type),
+                                      style: TextStyle(
+                                          fontSize: 11, color: Colors.grey[500])),
+                                  const SizedBox(width: 10),
+                                ],
+                                if (stop.estimatedTime > 0) ...[
+                                  Icon(Icons.schedule_outlined,
+                                      size: 11, color: Colors.grey[400]),
+                                  const SizedBox(width: 3),
+                                  // ✅ FIX: hours in schedule sheet
+                                  Text(_fmtDuration(stop.estimatedTime),
+                                      style: TextStyle(
+                                          fontSize: 11, color: Colors.grey[500])),
+                                ],
+                                if (stop.estimatedCost > 0) ...[
+                                  const SizedBox(width: 10),
+                                  Icon(Icons.payments_outlined,
+                                      size: 11, color: Colors.grey[400]),
+                                  const SizedBox(width: 2),
+                                  Text('\$${stop.estimatedCost}',
+                                      style: TextStyle(
+                                          fontSize: 11, color: Colors.grey[500])),
+                                ],
+                              ]),
+                              if (stop.address.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Row(children: [
+                                  Icon(Icons.place_outlined,
+                                      size: 11, color: Colors.grey[400]),
+                                  const SizedBox(width: 3),
+                                  Expanded(child: Text(stop.address,
+                                      style: TextStyle(
+                                          fontSize: 11, color: Colors.grey[500]),
+                                      maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                ]),
+                              ],
+                            ]),
+                          ),
+                        )),
+                      ]),
+                    );
+                  }),
+                ]);
+              },
+            ),
+          ),
+        ]),
       ),
     );
   }
@@ -313,37 +608,55 @@ class _MapScreenState extends State<MapScreen> {
         isDone: isDone,
         isActive: isActive,
         color: color,
-        onAddressResolved: (resolvedAddress) {
-          mp.updateStopAddress(stop.id, resolvedAddress);
-        },
+        dayLabel: _groupByDay(mp.sortedStops).length > 1
+            ? 'Day ${_dayOf(mp.sortedStops, num - 1)}'
+            : null,
+        onAddressResolved: (addr) => mp.updateStopAddress(stop.id, addr),
       ),
     );
   }
 
   void _saveRoute(BuildContext ctx, RouteData routeData, MoodProvider mood) {
     Provider.of<SavedRoutesProvider>(ctx, listen: false).saveRoute(SavedRoute(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id:        DateTime.now().millisecondsSinceEpoch.toString(),
       routeName: routeData.routeName,
-      city: mood.selectedCity,
-      category: mood.selectedCategory?.displayName ?? '',
-      date: DateTime.now(),
-      stops: routeData.stops.map((s) => s.name).toList(),
+      city:      mood.selectedCity,
+      category:  mood.selectedCategory?.displayName ?? '',
+      date:      DateTime.now(),
+      stops:     routeData.stops.map((s) => s.name).toList(),
     ));
     ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
         content: Text('Route saved!'), backgroundColor: Colors.green));
   }
+
+  static String _fmtType(String raw) {
+    final last = raw.split('.').last.replaceAll('_', ' ');
+    return last.isEmpty ? raw : last[0].toUpperCase() + last.substring(1);
+  }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// Stop Details Sheet — fetches address from Geoapify when missing
-// ═════════════════════════════════════════════════════════════════════════════
+// ─── Strip item ───────────────────────────────────────────────────────────────
+class _StripItem {
+  final bool      isHeader;
+  final int       day;
+  final RouteStop? stop;
+  final int       globalIndex;
+  _StripItem.header(this.day) : isHeader = true, stop = null, globalIndex = -1;
+  _StripItem.stop(this.stop, this.globalIndex) : isHeader = false, day = -1;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Stop Details Sheet
+// Shows address, type, HOURS duration, cost, day number, visited/current badge
+// ═══════════════════════════════════════════════════════════════════
 class _StopDetailsSheet extends StatefulWidget {
   final RouteStop stop;
   final int num;
   final bool isDone;
   final bool isActive;
   final Color color;
-  final void Function(String address) onAddressResolved;
+  final String? dayLabel;   // e.g. "Day 2" — null for single-day routes
+  final void Function(String) onAddressResolved;
 
   _StopDetailsSheet({
     required this.stop,
@@ -351,6 +664,7 @@ class _StopDetailsSheet extends StatefulWidget {
     required this.isDone,
     required this.isActive,
     required this.color,
+    required this.dayLabel,
     required this.onAddressResolved,
   });
 
@@ -359,32 +673,26 @@ class _StopDetailsSheet extends StatefulWidget {
 }
 
 class _StopDetailsSheetState extends State<_StopDetailsSheet> {
-  String _address = '';
-  bool _loadingAddress = false;
+  String _address     = '';
+  bool   _loadingAddr = false;
 
   @override
   void initState() {
     super.initState();
     _address = widget.stop.address;
-    // If address is missing but we have a placeId, fetch it from Geoapify
-    if (_address.isEmpty && widget.stop.placeId.isNotEmpty) {
-      _fetchAddress();
-    }
+    if (_address.isEmpty && widget.stop.placeId.isNotEmpty) _fetchAddress();
   }
 
   Future<void> _fetchAddress() async {
-    setState(() => _loadingAddress = true);
+    setState(() => _loadingAddr = true);
     try {
       final addr = await ApiService().fetchPlaceAddress(widget.stop.placeId);
       if (mounted) {
-        setState(() {
-          _address = addr;
-          _loadingAddress = false;
-        });
+        setState(() { _address = addr; _loadingAddr = false; });
         if (addr.isNotEmpty) widget.onAddressResolved(addr);
       }
     } catch (_) {
-      if (mounted) setState(() => _loadingAddress = false);
+      if (mounted) setState(() => _loadingAddr = false);
     }
   }
 
@@ -395,140 +703,145 @@ class _StopDetailsSheetState extends State<_StopDetailsSheet> {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 24, right: 24, top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── drag handle ────────────────────────────────────────────────
-          Center(child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
-          const SizedBox(height: 16),
+          left: 24, right: 24, top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 28),
+      child: Column(mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-          // ── stop number + name ─────────────────────────────────────────
-          Row(children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: widget.isDone ? Colors.grey : widget.isActive ? color : color.withOpacity(0.5),
-              child: widget.isDone
-                  ? const Icon(Icons.check, color: Colors.white)
-                  : Text('${widget.num}',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-            ),
-            const SizedBox(width: 14),
-            Expanded(child: Text(stop.name,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-          ]),
+        // Drag handle
+        Center(child: Container(width: 40, height: 4,
+            decoration: BoxDecoration(color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2)))),
+        const SizedBox(height: 16),
 
-          const SizedBox(height: 16),
-
-          // ── address ────────────────────────────────────────────────────
-          _DetailRow(
-            icon: Icons.place_outlined,
-            color: color,
-            label: 'Address',
-            child: _loadingAddress
-                ? Row(children: [
-                    SizedBox(width: 14, height: 14,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: color)),
-                    const SizedBox(width: 8),
-                    Text('Loading address…',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500])),
-                  ])
-                : Text(
-                    _address.isNotEmpty ? _address : 'Address not available',
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: _address.isNotEmpty ? Colors.grey[800] : Colors.grey[400],
-                        fontStyle: _address.isEmpty ? FontStyle.italic : FontStyle.normal),
-                  ),
+        // Stop number + name
+        Row(children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: widget.isDone ? Colors.grey
+                : widget.isActive ? color : color.withOpacity(0.5),
+            child: widget.isDone
+                ? const Icon(Icons.check, color: Colors.white)
+                : Text('${widget.num}',
+                    style: const TextStyle(color: Colors.white,
+                        fontWeight: FontWeight.bold, fontSize: 16)),
           ),
-
-          if (stop.type.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            _DetailRow(
-              icon: Icons.category_outlined,
-              color: color,
-              label: 'Type',
-              child: Text(
-                _formatType(stop.type),
-                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(stop.name,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            // ✅ Day label shown directly under the name
+            if (widget.dayLabel != null)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: color.withOpacity(0.3))),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.wb_sunny_outlined, size: 12, color: color),
+                  const SizedBox(width: 4),
+                  Text(widget.dayLabel!,
+                      style: TextStyle(fontSize: 12, color: color,
+                          fontWeight: FontWeight.w600)),
+                ]),
               ),
-            ),
-          ],
+          ])),
+        ]),
+        const SizedBox(height: 16),
 
-          if (stop.estimatedTime > 0 || stop.estimatedCost > 0) ...[
-            const SizedBox(height: 10),
-            Row(children: [
-              if (stop.estimatedTime > 0) Expanded(child: _DetailRow(
-                icon: Icons.schedule_outlined, color: color, label: 'Duration',
-                child: Text('${stop.estimatedTime} min',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-              )),
-              if (stop.estimatedCost > 0) Expanded(child: _DetailRow(
-                icon: Icons.payments_outlined, color: color, label: 'Est. cost',
-                child: Text('\$${stop.estimatedCost}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700])),
-              )),
-            ]),
-          ],
+        // Address
+        _DetailRow(
+          icon: Icons.place_outlined, color: color, label: 'Address',
+          child: _loadingAddr
+              ? Row(children: [
+                  SizedBox(width: 14, height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: color)),
+                  const SizedBox(width: 8),
+                  Text('Loading…', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
+                ])
+              : Text(_address.isNotEmpty ? _address : 'Address not available',
+                  style: TextStyle(fontSize: 14,
+                      color: _address.isNotEmpty ? Colors.grey[800] : Colors.grey[400],
+                      fontStyle: _address.isEmpty ? FontStyle.italic : FontStyle.normal)),
+        ),
 
-          const SizedBox(height: 20),
-
-          if (widget.isDone)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.green.withOpacity(0.4))),
-              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
-                SizedBox(width: 6),
-                Text('Visited', style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
-              ]),
-            )
-          else if (widget.isActive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: color.withOpacity(0.4))),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.near_me, size: 16, color: color),
-                const SizedBox(width: 6),
-                Text('Current stop', style: TextStyle(color: color, fontWeight: FontWeight.w600)),
-              ]),
-            ),
-
-          const SizedBox(height: 8),
+        // Type
+        if (stop.type.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          _DetailRow(
+            icon: Icons.category_outlined, color: color, label: 'Type',
+            child: Text(_fmtType(stop.type),
+                style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+          ),
         ],
-      ),
+
+        // Duration + Cost
+        if (stop.estimatedTime > 0 || stop.estimatedCost > 0) ...[
+          const SizedBox(height: 10),
+          Row(children: [
+            if (stop.estimatedTime > 0) Expanded(child: _DetailRow(
+              icon: Icons.schedule_outlined, color: color, label: 'Duration',
+              // ✅ FIX: hours not minutes
+              child: Text(_fmtDuration(stop.estimatedTime),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+            )),
+            if (stop.estimatedCost > 0) Expanded(child: _DetailRow(
+              icon: Icons.payments_outlined, color: color, label: 'Est. cost',
+              child: Text('\$${stop.estimatedCost}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+            )),
+          ]),
+        ],
+
+        const SizedBox(height: 20),
+
+        // Status badge
+        if (widget.isDone)
+          _StatusChip(label: 'Visited', icon: Icons.check_circle_outline,
+              color: Colors.green)
+        else if (widget.isActive)
+          _StatusChip(label: 'Current stop', icon: Icons.near_me, color: color),
+
+        const SizedBox(height: 8),
+      ]),
     );
   }
 
-  String _formatType(String raw) {
-    final parts = raw.split('.');
-    final last = parts.last.replaceAll('_', ' ');
+  static String _fmtType(String raw) {
+    final last = raw.split('.').last.replaceAll('_', ' ');
     return last.isEmpty ? raw : last[0].toUpperCase() + last.substring(1);
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String label;
-  final Widget child;
+class _StatusChip extends StatelessWidget {
+  final String label; final IconData icon; final Color color;
+  const _StatusChip({required this.label, required this.icon, required this.color});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.4))),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, size: 16, color: color),
+      const SizedBox(width: 6),
+      Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+    ]),
+  );
+}
 
+class _DetailRow extends StatelessWidget {
+  final IconData icon; final Color color;
+  final String label; final Widget child;
   const _DetailRow({required this.icon, required this.color,
       required this.label, required this.child});
-
   @override
-  Widget build(BuildContext context) {
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
       Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
@@ -538,15 +851,18 @@ class _DetailRow extends StatelessWidget {
       ),
       const SizedBox(width: 10),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label,
-            style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w500)),
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[500],
+            fontWeight: FontWeight.w500)),
         const SizedBox(height: 2),
         child,
       ])),
-    ]);
-  }
+    ],
+  );
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Before-mood sheet
+// ═══════════════════════════════════════════════════════════════════
 class _BeforeMoodSheet extends StatefulWidget {
   final Color color;
   final void Function(int) onSelected;
@@ -556,55 +872,57 @@ class _BeforeMoodSheet extends StatefulWidget {
 class _BeforeMoodSheetState extends State<_BeforeMoodSheet> {
   int? _selected;
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-        const SizedBox(height: 20),
-        const Text('How are you feeling\nright now?', textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Text('Before you start the route', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-        const SizedBox(height: 24),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: List.generate(5, (i) {
-          final on = _selected == i;
-          return GestureDetector(
-            onTap: () => setState(() => _selected = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              width: 58, height: 68,
-              decoration: BoxDecoration(
-                  color: on ? widget.color.withOpacity(0.14) : Colors.grey[50],
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: on ? widget.color : Colors.grey[300]!, width: on ? 2 : 1)),
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text(_moodEmojis[i], style: TextStyle(fontSize: on ? 28 : 22)),
-                const SizedBox(height: 3),
-                Text(_moodLabels[i], style: TextStyle(fontSize: 9,
-                    color: on ? widget.color : Colors.grey[500],
-                    fontWeight: on ? FontWeight.bold : FontWeight.normal)),
-              ]),
-            ),
-          );
-        })),
-        const SizedBox(height: 24),
-        Row(children: [
-          Expanded(child: TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Skip', style: TextStyle(color: Colors.grey[500])))),
-          const SizedBox(width: 12),
-          Expanded(flex: 2, child: ElevatedButton(
-            onPressed: _selected != null ? () => widget.onSelected(_selected!) : null,
-            style: ElevatedButton.styleFrom(
-                backgroundColor: widget.color, foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 14)),
-            child: const Text("Let's go!"),
-          )),
-        ]),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 40, height: 4, decoration: BoxDecoration(
+          color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+      const SizedBox(height: 20),
+      const Text('How are you feeling\nright now?', textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 6),
+      Text('Before you start the route',
+          style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+      const SizedBox(height: 24),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(5, (i) {
+            final on = _selected == i;
+            return GestureDetector(
+              onTap: () => setState(() => _selected = i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                width: 58, height: 68,
+                decoration: BoxDecoration(
+                    color: on ? widget.color.withOpacity(0.14) : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: on ? widget.color : Colors.grey[300]!,
+                        width: on ? 2 : 1)),
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text(_moodEmojis[i], style: TextStyle(fontSize: on ? 28 : 22)),
+                  const SizedBox(height: 3),
+                  Text(_moodLabels[i], style: TextStyle(fontSize: 9,
+                      color: on ? widget.color : Colors.grey[500],
+                      fontWeight: on ? FontWeight.bold : FontWeight.normal)),
+                ]),
+              ),
+            );
+          })),
+      const SizedBox(height: 24),
+      Row(children: [
+        Expanded(child: TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Skip', style: TextStyle(color: Colors.grey[500])))),
+        const SizedBox(width: 12),
+        Expanded(flex: 2, child: ElevatedButton(
+          onPressed: _selected != null ? () => widget.onSelected(_selected!) : null,
+          style: ElevatedButton.styleFrom(
+              backgroundColor: widget.color, foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 14)),
+          child: const Text("Let's go!"),
+        )),
       ]),
-    );
-  }
+    ]),
+  );
 }
