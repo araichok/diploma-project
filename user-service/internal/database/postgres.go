@@ -8,12 +8,12 @@ import (
 
 	"user-service/internal/config"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func ConnectDB(cfg *config.Config) (*pgx.Conn, error) {
+func ConnectDB(cfg *config.Config) (*pgxpool.Pool, error) {
 	connString := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s pool_max_conns=10",
 		cfg.DBHost,
 		cfg.DBPort,
 		cfg.DBUser,
@@ -22,14 +22,17 @@ func ConnectDB(cfg *config.Config) (*pgx.Conn, error) {
 		cfg.DBSSLMode,
 	)
 
-	var conn *pgx.Conn
+	var pool *pgxpool.Pool
 	var err error
 
 	for i := 0; i < 10; i++ {
-		conn, err = pgx.Connect(context.Background(), connString)
+		pool, err = pgxpool.New(context.Background(), connString)
 		if err == nil {
-			log.Println("Connected to PostgreSQL")
-			return conn, nil
+			if pingErr := pool.Ping(context.Background()); pingErr == nil {
+				log.Println("Connected to PostgreSQL pool")
+				return pool, nil
+			}
+			pool.Close()
 		}
 
 		log.Println("Waiting for PostgreSQL...")
