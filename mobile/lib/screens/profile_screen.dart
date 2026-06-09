@@ -33,8 +33,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (parts.length > 1) _lastNameController.text = parts.skip(1).join(' ');
     _emailController.text = user.email;
 
-    // Phone is stored locally — load it from SharedPreferences
-    final phone = await ApiService().getLocalPhone();
+    // Phone is stored locally per-user — pass email so the right key is read
+    final phone = await ApiService().getLocalPhone(email: user.email);
     if (mounted) {
       setState(() {
         _phoneController.text = phone.isNotEmpty ? phone : (user.phoneNumber.isNotEmpty ? user.phoneNumber : '');
